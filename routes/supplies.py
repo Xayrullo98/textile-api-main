@@ -1,7 +1,7 @@
 import inspect
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from functions.supplies import create_supplier, update_supplier, all_supplies
+from functions.supplies import create_supply, update_supply, all_supplies
 from models.supplies import Supplies
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
@@ -17,7 +17,7 @@ supplies_router = APIRouter(
 @supplies_router.post('/add', )
 def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if create_supplier(form=form, thisuser=current_user, db=db):
+    if create_supply(form=form, thisuser=current_user, db=db):
         raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
@@ -36,7 +36,7 @@ def get_supplies(search: str = None,  id: int = 0,  page: int = 1,
 @supplies_router.put("/update")
 def supplie_update(form: SuppliesUpdate, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
-    if update_supplier(form, current_user, db):
+    if update_supply(form, current_user, db):
         raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
