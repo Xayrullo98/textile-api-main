@@ -23,6 +23,7 @@ def all_users(search, page, limit, status, db):
         users = users.filter(Users.status==True)
     else:
         users = users.filter(Users.status==False)
+        
 
     if page and limit:
         return pagination(users, page, limit)

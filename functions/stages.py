@@ -42,9 +42,9 @@ def create_stage(form, db, thisuser):
 
 
 def update_stage(form, db, thisuser):
-    the_one(db, Stages, form.id, thisuser)
-    the_one(db=db, model=Measures, id=form.measure_id, thisuser=thisuser)
-    the_one(db=db, model=Categories, id=form.category_id, thisuser=thisuser)
+    the_one(db, Stages, form.id,)
+    the_one(db=db, model=Measures, id=form.measure_id, )
+    the_one(db=db, model=Categories, id=form.category_id,)
     db.query(Stages).filter(Stages.id == form.id).update({
         Stages.name: form.name,
         Stages.number: form.number,
