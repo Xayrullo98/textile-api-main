@@ -1,6 +1,5 @@
 from sqlalchemy.orm import joinedload
 
-from functions.warehouse_products import create_warehouse_product
 from models.currencies import Currencies
 from models.suppliers import Suppliers
 from utils.db_operations import save_in_db, the_one
@@ -8,7 +7,7 @@ from utils.pagination import pagination
 from models.supplies import Supplies
 
 
-def all_supplies(search, detail_id, supplier_id, currency_id, page, limit, db):
+def all_supplies(search,detail_id,supplier_id,currency_id, page, limit, db):
     if search:
         search_formatted = "%{}%".format(search)
         search_filter = Supplies.quantity.like(search_formatted) | Supplies.price.like(
@@ -38,11 +37,9 @@ def all_supplies(search, detail_id, supplier_id, currency_id, page, limit, db):
     else:
         return supplies.all()
 
-
 def one_supplies(id, db):
     return db.query(Suppliers).options(
         joinedload(Suppliers.order)).filter(Suppliers.id == id).first()
-
 
 def create_supplier(form, db, thisuser):
     the_one(db=db, model=Suppliers, id=form.supplier_id, thisuser=thisuser)
@@ -55,9 +52,6 @@ def create_supplier(form, db, thisuser):
         currency_id=form.currency_id,
         user_id=thisuser.id, )
     save_in_db(db, new_supplier_db)
-    # after created supply, it should be added warehouse_products
-    create_warehouse_product(category_detail_id=form.detail_id, quantity=form.quantity,
-                             price=form.price, currency_id=form.currency_id)
 
 
 def update_supplier(form, db, thisuser):
