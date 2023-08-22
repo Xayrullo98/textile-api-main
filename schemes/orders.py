@@ -11,6 +11,7 @@ class CreateOrder(BaseModel):
     quantity: float = Field(..., ge=0)
     delivery_date: date
     status: int = Field(..., ge=0)
+    order_status: bool
 
 
 class UpdateOrder(BaseModel):
@@ -22,3 +23,4 @@ class UpdateOrder(BaseModel):
     quantity: float = Field(..., ge=0)
     delivery_date: date
     status: int = Field(..., ge=0)
+    order_status: bool

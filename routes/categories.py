@@ -15,7 +15,8 @@ categories_router = APIRouter(
 )
 
 @categories_router.post('/add', )
-def add_category_detail(form: CreateCategory, db: Session = Depends(database),current_user: UserCurrent = Depends(get_current_active_user)):
+def add_category_detail(form: CreateCategory, db: Session = Depends(database),
+                        current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if create_category(form=form, thisuser=current_user, db=db):
         raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
@@ -27,7 +28,7 @@ def get_categories(search: str = None,  id: int = 0,  page: int = 1,
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db=db, model=Categories, id=id, thisuser=current_user)
+        return the_one(db=db, model=Categories, id=id)
 
     else:
         return all_categories(search=search, page=page, limit=limit, db=db, )

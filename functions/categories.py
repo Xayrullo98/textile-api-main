@@ -13,7 +13,7 @@ def all_categories(search, page, limit, db):
         search_filter = Categories.id > 0
 
     categories = db.query(Categories).options(
-        joinedload(Categories.stage),joinedload(Categories.category_detail)).filter(search_filter).order_by(Categories.id.desc())
+        joinedload(Categories.stage)).filter(search_filter).order_by(Categories.id.desc())
     if page and limit:
         return pagination(categories, page, limit)
     else:
@@ -22,8 +22,7 @@ def all_categories(search, page, limit, db):
 
 def one_category(id, db):
     return db.query(Categories).options(
-        joinedload(Categories.order)).options(
-        joinedload(Categories.stage),joinedload(Categories.category_detail)).filter(Categories.id == id).first()
+        joinedload(Categories.order)).filter(Categories.id == id).first()
 
 
 def create_category(form, db, thisuser):

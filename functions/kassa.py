@@ -39,7 +39,6 @@ def create_kassa(form, db, thisuser):
         user_id=thisuser.id,
     )
     save_in_db(db, new_kassa_db)
-    return new_kassa_db
 
 
 def update_kassa(form, db, thisuser):

@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
+
 
 class CurrenciesBase(BaseModel):
     name: str    
-    money:str
+    money: float = Field(..., ge=0)
 
 
 class CurrenciesCreate(CurrenciesBase):

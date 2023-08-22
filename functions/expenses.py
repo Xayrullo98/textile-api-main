@@ -45,7 +45,10 @@ def create_expense(form, db, thisuser):
         user_id=thisuser.id,
     )
     save_in_db(db, new_expense_db)
-    return new_expense_db
+    db.query(Kassas).filter(Kassas.id == form.id).update({
+        Kassas.balance: Kassas.balance - form.money()
+    })
+    db.commit()
 
 
 def update_expense(form, db, thisuser):
@@ -63,3 +66,4 @@ def update_expense(form, db, thisuser):
         Expenses.user_id: thisuser.id
     })
     db.commit()
+

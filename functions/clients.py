@@ -51,7 +51,7 @@ def create_client(form, db, thisuser):
 
 
 def update_client(form, db, thisuser):
-    the_one(db, Clients, form.id, thisuser)
+    the_one(db, Clients, form.id)
     db.query(Clients).filter(Clients.id == form.id).update({
         Clients.name: form.name,
         Clients.comment: form.comment,
@@ -63,5 +63,5 @@ def update_client(form, db, thisuser):
         phone_id = i.id
         comment = i.comment
         number = i.number
-        update_phone(phone_id, number, 'client', form.id, comment, thisuser, db)
+        update_phone(phone_id, number, 'client', form.id, comment, thisuser.id, db)
 

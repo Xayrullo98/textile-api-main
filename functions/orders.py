@@ -45,11 +45,11 @@ def create_order(form, db, thisuser):
         currency_id=form.currency_id,
         delivery_date=form.delivery_date,
         status=form.status,
+        order_status=form.order_status,
         user_id=thisuser.id,
 
     )
     save_in_db(db, new_order_db)
-    return new_order_db
 
 
 def update_order(form, db, thisuser):
@@ -65,6 +65,7 @@ def update_order(form, db, thisuser):
         Orders.category_id: form.category_id,
         Orders.delivery_date: form.delivery_date,
         Orders.status: form.status,
+        Orders.order_status: form.order_status,
         Orders.user_id: thisuser.id
     })
     db.commit()

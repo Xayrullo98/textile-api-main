@@ -29,15 +29,15 @@ def get_clients(search: str = None,  id: int = 0,  page: int = 1,
 def kassa_create(form: CreateKassa, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if create_kassa(form=form, thisuser=current_user, db=db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    create_kassa(form=form, thisuser=current_user, db=db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @kassa_router.put("/update")
 def kassa_update(form: UpdateKassa, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if update_kassa(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    update_kassa(form, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 

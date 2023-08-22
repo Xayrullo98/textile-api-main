@@ -27,7 +27,7 @@ def get_currencies(search: str = None,  id: int = 0,  page: int = 1,
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db, Currencies, id, current_user)
+        return the_one(db, Currencies, id)
 
     else:
         return all_currencies(search=search, page=page, limit=limit, db=db, )

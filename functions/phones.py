@@ -35,3 +35,7 @@ def update_phone(phone_id, number, source, source_id, comment, user_id, db):
     })
     db.commit()
 
+def delete_phone(id, db):
+    db.query(Phones).filter(Phones.id == id).delete()
+    db.commit()
+

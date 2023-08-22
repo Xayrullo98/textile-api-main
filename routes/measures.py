@@ -17,8 +17,8 @@ measures_router = APIRouter(
 @measures_router.post('/add', )
 def add_category_detail(form: MeasureCreate, db: Session = Depends(database),current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if create_measure(form=form, thisuser=current_user, db=db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    create_measure(form=form, thisuser=current_user, db=db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @measures_router.get('/', status_code=200)
@@ -27,7 +27,7 @@ def get_measures(search: str = None,  id: int = 0,  page: int = 1,
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db, Measures, id, current_user)
+        return the_one(db, Measures, id)
 
     else:
         return all_measures(search=search, page=page, limit=limit, db=db, )
@@ -36,7 +36,7 @@ def get_measures(search: str = None,  id: int = 0,  page: int = 1,
 @measures_router.put("/update")
 def category_detail_update(form: MeasureUpdate, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
-    if update_measure(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    update_measure(form, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 

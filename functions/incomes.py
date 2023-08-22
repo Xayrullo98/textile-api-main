@@ -45,7 +45,10 @@ def create_income(form, db, thisuser):
         user_id=thisuser.id,
     )
     save_in_db(db, new_income_db)
-    return new_income_db
+    db.query(Kassas).filter(Kassas.id == form.id).update({
+        Kassas.balance: Kassas.balance + form.money()
+    })
+    db.commit()
 
 
 def update_income(form, db, thisuser):

@@ -21,6 +21,7 @@ class Orders(Base):
     quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)
     status = Column(Integer, nullable=False)
+    order_status = Column(Boolean)
 
     category = relationship("Categories", foreign_keys=[category_id],
                             primaryjoin=lambda: and_(Categories.id == Orders.category_id))

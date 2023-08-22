@@ -11,6 +11,5 @@ class Currencies(Base):
     money = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
 
-
     balances = relationship("Supplier_balance", back_populates='currency')
     supply = relationship("Supplies", back_populates='currency')
