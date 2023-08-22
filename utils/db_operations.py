@@ -27,7 +27,7 @@ def save_in_db(
     return obj
 
 
-def the_one(db, model, id, thisuser):
+def the_one(db, model, id,):
     the_one = db.query(model).filter(model.id == id,).first()
     if not the_one:
         raise HTTPException(status_code=400, detail=f"Bazada bunday {model} yo'q!")
