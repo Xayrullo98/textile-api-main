@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.measures import Measures
 
@@ -23,6 +23,7 @@ def one_measure(id, db):
         joinedload(Measures.order)).filter(Measures.id == id).first()
 
 def create_measure(form, db, thisuser):
+    the_one_model_name(model=Measures, name=form.name, db=db)
     new_measure_db = Measures(
         name=form.name,
         user_id=thisuser.id, )
@@ -30,7 +31,7 @@ def create_measure(form, db, thisuser):
 
 
 def update_measure(form, db, thisuser):
-    the_one(db, Measures, form.id, thisuser)
+    the_one(db, Measures, form.id)
     db.query(Measures).filter(Measures.id == form.id).update({
         Measures.name: form.name,
         Measures.user_id: thisuser.id

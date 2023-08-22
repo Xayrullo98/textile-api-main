@@ -1,4 +1,4 @@
-from utils.db_operations import save_in_db
+from utils.db_operations import save_in_db, the_one_model_number
 from utils.pagination import pagination
 from models.phones import Phones
 
@@ -15,6 +15,7 @@ def all_phones(search, page, limit, db, branch_id):
 
 
 def create_phone(number, source, source_id, comment, user_id, db):
+    the_one_model_number(model=Phones, number=number, db=db)
     new_phone_db = Phones(
         number=number,
         comment=comment,

@@ -2,7 +2,7 @@ from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
 from models.measures import Measures
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.stages import Stages
 
@@ -28,6 +28,7 @@ def one_stage(id, db):
 
 
 def create_stage(form, db, thisuser):
+    the_one_model_name(model=Stages, name=form.name, db=db)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
     new_stage_db = Stages(

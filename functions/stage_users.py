@@ -1,7 +1,7 @@
 from sqlalchemy.orm import joinedload
 
 from models.stages import Stages
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.stage_users import Stage_users
 
@@ -30,6 +30,7 @@ def one_stage_user(id, db):
         joinedload(Stage_users.stage),joinedload(Stage_users.connected_user)).filter(Stage_users.id == id).first()
 
 def create_stage_user(form, db, thisuser):
+    the_one_model_name(model=Stage_users, name=form.name, db=db)
     the_one(db=db, model=Stages, id=form.stage_id, )
 
     new_stage_user_db = Stage_users(

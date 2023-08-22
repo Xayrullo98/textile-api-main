@@ -2,7 +2,7 @@ from sqlalchemy.orm import joinedload
 
 from models.currencies import Currencies
 from models.supplies import Supplies
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.supplier_balances import Supplier_balance
 
@@ -35,8 +35,9 @@ def one_supplier_balance(id, db):
         joinedload(Supplier_balance.order)).filter(Supplier_balance.id == id).first()
 
 def create_supplier_balance(form, db, thisuser):
-    the_one(db=db, model=Supplies, id=form.supplies_id, thisuser=thisuser)
-    the_one(db=db, model=Currencies, id=form.currencies_id, thisuser=thisuser)
+    the_one_model_name(model=Supplier_balance, name=form.name, db=db)
+    the_one(db=db, model=Supplies, id=form.supplies_id)
+    the_one(db=db, model=Currencies, id=form.currencies_id)
     new_supplier_balance_db = Supplier_balance(
         balance=form.balance,
         currencies_id=form.currencies_id,
@@ -46,9 +47,9 @@ def create_supplier_balance(form, db, thisuser):
 
 
 def update_supplier_balance(form, db, thisuser):
-    the_one(db, Supplier_balance, form.id, thisuser)
-    the_one(db=db, model=Supplies, id=form.supplies_id, thisuser=thisuser)
-    the_one(db=db, model=Currencies, id=form.currencies_id, thisuser=thisuser)
+    the_one(db, Supplier_balance, form.id)
+    the_one(db=db, model=Supplies, id=form.supplies_id,  )
+    the_one(db=db, model=Currencies, id=form.currencies_id,  )
     db.query(Supplier_balance).filter(Supplier_balance.id == form.id).update({
         Supplier_balance.supplier_balances_id: form.supplier_balances_id,
         Supplier_balance.supplies_id: form.supplies_id,

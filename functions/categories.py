@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.categories import Categories
 
@@ -26,6 +26,7 @@ def one_category(id, db):
 
 
 def create_category(form, db, thisuser):
+    the_one_model_name(model=Categories,name=form.name,db=db)
     new_currencie_db = Categories(
         name=form.name,
         comment=form.comment,

@@ -10,7 +10,6 @@ from models.users import Users
 
 
 def all_users(search, page, limit, status, db):
-    # users = db.query(Users).options(joinedload(Users.phones))
     if search:
         search_formatted = "%{}%".format(search)
         search_filter = Users.name.like(search_formatted) | Users.address.like(
@@ -20,12 +19,11 @@ def all_users(search, page, limit, status, db):
 
     users = db.query(Users).filter(search_filter).options(joinedload(Users.phones)).order_by(
         Users.id.desc())
-    if status==True:
+    if status:
         users = users.filter(Users.status==True)
-    if status==False:
-        users = users.filter(Users.status==False)
     else:
-        users = users
+        users = users.filter(Users.status==False)
+
     if page and limit:
         return pagination(users, page, limit)
     else:
@@ -33,7 +31,7 @@ def all_users(search, page, limit, status, db):
 
 
 def create_user(form, db, thisuser):
-    the_one_username(db=db, model=Users, username=form.username, thisuser=thisuser)
+    the_one_username(db=db, model=Users, username=form.username)
     new_user_db = Users(
         name=form.name,
         username=form.username,

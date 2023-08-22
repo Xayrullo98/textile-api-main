@@ -3,7 +3,7 @@ from sqlalchemy.orm import joinedload
 from functions.warehouse_products import create_warehouse_product
 from models.currencies import Currencies
 from models.suppliers import Suppliers
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.supplies import Supplies
 
@@ -45,6 +45,7 @@ def one_supply(id, db):
 
 
 def create_supply(form, db, thisuser):
+    the_one_model_name(model=Supplies, name=form.name, db=db)
     the_one(db=db, model=Suppliers, id=form.supplier_id)
     the_one(db=db, model=Currencies, id=form.currency_id)
     new_supplier_db = Supplies(
@@ -63,7 +64,7 @@ def create_supply(form, db, thisuser):
 def update_supply(form, db, thisuser):
     the_one(db=db, model=Suppliers, id=form.supplier_id)
     the_one(db=db, model=Currencies, id=form.currencies_id)
-    the_one(db, Supplies, form.id, thisuser)
+    the_one(db, Supplies, form.id)
     db.query(Supplies).filter(Supplies.id == form.id).update({
         Supplies.detail_id: form.detail_id,
         Supplies.quantity: form.quantity,
