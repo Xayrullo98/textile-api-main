@@ -8,13 +8,13 @@ from utils.pagination import pagination
 from models.clients import Clients
 
 
-def all_broken_products(page, limit, db):
+def all_broken_products(category_id, page, limit, db):
     broken_products = db.query(Broken_products).options(joinedload(Broken_products.category))
 
-    if page and limit:
-        return pagination(broken_products, page, limit)
-    else:
-        return broken_products
+    if category_id:
+        return broken_products.filter(Broken_products.id == category_id).all()
+    return pagination(broken_products, page, limit)
+
 
 
 def one_broken(ident, db):
