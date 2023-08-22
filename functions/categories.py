@@ -35,7 +35,7 @@ def create_category(form, db, thisuser):
 
 
 def update_category(form, db, thisuser):
-    the_one(db, Categories, form.id, thisuser)
+    the_one(db, Categories, form.id)
     db.query(Categories).filter(Categories.id == form.id).update({
         Categories.name: form.name,
         Categories.comment: form.comment,

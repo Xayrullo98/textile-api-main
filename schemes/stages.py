@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CreateStage(BaseModel):
@@ -6,7 +6,7 @@ class CreateStage(BaseModel):
     number: int
     comment: str
     status: bool
-    kpi: float
+    kpi: float = Field(...,ge=0.1)
     measure_id: int
     category_id: int
 

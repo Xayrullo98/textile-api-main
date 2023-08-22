@@ -34,8 +34,20 @@ def the_one(db, model, id):
     return the_one
 
 
-def the_one_username(db, model, username, thisuser):
+def the_one_username(db, model, username,):
     the_one = db.query(model).filter(model.username == username,).first()
     if  the_one:
         raise HTTPException(status_code=400, detail=f"Bazada bunday username({username}) mavjud!")
+    return the_one
+
+def the_one_model_name(db, model, name):
+    the_one = db.query(model).filter(model.name == name,).first()
+    if  the_one:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday name({name}) mavjud!")
+    return the_one
+
+def the_one_model_number(db, model, number):
+    the_one = db.query(model).filter(model.number == number,).first()
+    if  the_one:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday number({number}) mavjud!")
     return the_one
