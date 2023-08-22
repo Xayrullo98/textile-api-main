@@ -1,3 +1,5 @@
+from sqlalchemy.orm import relationship
+
 from db import Base
 from sqlalchemy import Column, String, Integer, Boolean
 
@@ -13,3 +15,5 @@ class Users(Base):
     kpi = Column(Integer, nullable=False)
     role = Column(String(255), nullable=False)
     token = Column(String(255), nullable=True)
+
+    stage_user = relationship("Stage_users", back_populates='connected_user')

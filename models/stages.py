@@ -17,6 +17,6 @@ class Stages(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
 
 
-    measure = relationship("Measures",back_populates='stage')
-    category = relationship("Categories",back_populates='stage')
-    stage_user = relationship("Stages", back_populates='stage')
+    measure = relationship("Measures", back_populates='stage')
+    category = relationship("Categories", back_populates='stage')
+    stage_user = relationship("Stage_users", back_populates='stage')

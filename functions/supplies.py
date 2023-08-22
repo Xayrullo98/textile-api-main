@@ -39,14 +39,14 @@ def all_supplies(search, detail_id, supplier_id, currency_id, page, limit, db):
         return supplies.all()
 
 
-def one_supplies(id, db):
+def one_supply(id, db):
     return db.query(Suppliers).options(
         joinedload(Suppliers.order)).filter(Suppliers.id == id).first()
 
 
-def create_supplier(form, db, thisuser):
-    the_one(db=db, model=Suppliers, id=form.supplier_id, thisuser=thisuser)
-    the_one(db=db, model=Currencies, id=form.currencies_id, thisuser=thisuser)
+def create_supply(form, db, thisuser):
+    the_one(db=db, model=Suppliers, id=form.supplier_id)
+    the_one(db=db, model=Currencies, id=form.currency_id)
     new_supplier_db = Supplies(
         detail_id=form.detail_id,
         quantity=form.quantity,
@@ -60,9 +60,9 @@ def create_supplier(form, db, thisuser):
                              price=form.price, currency_id=form.currency_id)
 
 
-def update_supplier(form, db, thisuser):
-    the_one(db=db, model=Suppliers, id=form.supplier_id, thisuser=thisuser)
-    the_one(db=db, model=Currencies, id=form.currencies_id, thisuser=thisuser)
+def update_supply(form, db, thisuser):
+    the_one(db=db, model=Suppliers, id=form.supplier_id)
+    the_one(db=db, model=Currencies, id=form.currencies_id)
     the_one(db, Supplies, form.id, thisuser)
     db.query(Supplies).filter(Supplies.id == form.id).update({
         Supplies.detail_id: form.detail_id,

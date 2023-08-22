@@ -1,11 +1,11 @@
 import inspect
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from functions.stages import create_stage, update_stage, all_stages
+from functions.stages import create_stage, update_stage, all_stages, one_stage
 from models.stages import Stages
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
-from schemes.stages import CreateStage,UpdateStage
+from schemes.stages import CreateStage, UpdateStage
 from db import database
 from utils.db_operations import the_one
 from schemes.users import UserCurrent
@@ -27,7 +27,7 @@ def get_stages(search: str = None,  id: int = 0, page: int = 1,
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db, Stages, id, current_user)
+        return one_stage(id, db)
 
     else:
         return all_stages(search=search, page=page, limit=limit, db=db)

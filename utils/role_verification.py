@@ -11,3 +11,4 @@ def role_verification(user, function):
     elif user.role == "warehouseman" and function in allowed_functions_for_warehouseman:
         return True
     raise HTTPException(status_code=401, detail='Sizga ruhsat berilmagan!')
+

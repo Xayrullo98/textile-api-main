@@ -15,18 +15,21 @@ def all_stages(search, page, limit, db):
         search_filter = Stages.id > 0
 
     stages = db.query(Stages).options(
-        joinedload(Stages.category),joinedload(Stages.category),joinedload(Stages.stage_user)).filter(search_filter).order_by(Stages.id.desc())
+        joinedload(Stages.category), joinedload(Stages.measure), joinedload(Stages.stage_user)).filter(search_filter).order_by(Stages.id.desc())
     if page and limit:
         return pagination(stages, page, limit)
     else:
         return stages.all()
+
+
 def one_stage(id, db):
     return db.query(Stages).options(
-        joinedload(Stages.category),joinedload(Stages.category),joinedload(Stages.stage_user)).filter(Stages.id == id).first()
+        joinedload(Stages.category), joinedload(Stages.measure), joinedload(Stages.stage_user)).filter(Stages.id == id).first()
+
 
 def create_stage(form, db, thisuser):
-    the_one(db=db, model=Measures, id=form.measure_id, thisuser=thisuser)
-    the_one(db=db, model=Categories, id=form.category_id, thisuser=thisuser)
+    the_one(db=db, model=Measures, id=form.measure_id)
+    the_one(db=db, model=Categories, id=form.category_id)
     new_stage_db = Stages(
         name=form.name,
         number=form.number,

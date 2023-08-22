@@ -1,7 +1,7 @@
 import inspect
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from functions.stage_users import create_stage_user, update_stage_user, all_stage_user
+from functions.stage_users import create_stage_user, update_stage_user, all_stage_user, one_stage_user
 from models.stage_users import Stage_users
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
@@ -27,7 +27,7 @@ def get_stage_users(search: str = None,  id: int = 0,stage_user_id: int = 0,  pa
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db, Stage_users, id, current_user)
+        return one_stage_user(id, db)
 
     else:
         return all_stage_user(search=search, page=page, limit=limit, db=db,stage_user_id=stage_user_id )
@@ -36,7 +36,7 @@ def get_stage_users(search: str = None,  id: int = 0,stage_user_id: int = 0,  pa
 @stage_users_router.put("/update")
 def category_detail_update(form: UpdateStage_user, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
-    if update_stage_user(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    update_stage_user(form, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 

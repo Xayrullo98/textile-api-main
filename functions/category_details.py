@@ -39,8 +39,8 @@ def one_category_detail(id, db):
 
 
 def create_category_detail(form, db, thisuser):
-    the_one(db=db, model=Measures, id=form.measure_id, thisuser=thisuser)
-    the_one(db=db, model=Categories, id=form.category_id, thisuser=thisuser)
+    the_one(db=db, model=Measures, id=form.measure_id)
+    the_one(db=db, model=Categories, id=form.category_id)
     new_currencie_db = Category_details(
         name=form.name,
         quantity=form.quantity,
@@ -49,12 +49,13 @@ def create_category_detail(form, db, thisuser):
         comment=form.comment,
         user_id=thisuser.id, )
     save_in_db(db, new_currencie_db)
+    return new_currencie_db
 
 
 def update_category_detail(form, db, thisuser):
-    the_one(db, Category_details, form.id, thisuser)
-    the_one(db=db, model=Measures, id=form.measure_id, thisuser=thisuser)
-    the_one(db=db, model=Categories, id=form.category_id, thisuser=thisuser)
+    the_one(db, Category_details, form.id)
+    the_one(db=db, model=Measures, id=form.measure_id)
+    the_one(db=db, model=Categories, id=form.category_id)
     db.query(Category_details).filter(Category_details.id == form.id).update({
         Category_details.name: form.name,
         Category_details.quantity: form.quantity,
