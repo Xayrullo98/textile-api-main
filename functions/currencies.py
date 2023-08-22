@@ -12,7 +12,8 @@ def all_currencies(search, page, limit, db):
     else:
         search_filter = Currencies.id > 0
 
-    currencies = db.query(Currencies).filter(search_filter).order_by(Currencies.id.desc())
+    currencies = db.query(Currencies).options(
+        joinedload(Currencies.supply),joinedload(Currencies.balances)).filter(search_filter).order_by(Currencies.id.desc())
     if page and limit:
         return pagination(currencies, page, limit)
     else:
@@ -37,4 +38,4 @@ def update_currencie(form, db, thisuser):
     db.commit()
 def one_currency(id, db):
     return db.query(Currencies).options(
-        joinedload(Currencies.order)).filter(Currencies.id == id).first()
+        joinedload(Currencies.supply),joinedload(Currencies.balances),joinedload(Currencies.balances)).filter(Currencies.id == id).first()

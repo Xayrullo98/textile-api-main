@@ -12,4 +12,5 @@ class Suppliers(Base):
     comment = Column(String(255), nullable=False)
     user_id = Column(Integer, nullable=False)
 
+
     supply = relationship("Supplies", back_populates='supplier')

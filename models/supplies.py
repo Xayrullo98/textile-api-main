@@ -17,6 +17,7 @@ class Supplies(Base):
     status = Column(Boolean, nullable=True,default=True)
     received_user_id = Column(Integer, nullable=True)
 
+
     supplier = relationship("Suppliers",back_populates='supply')
     currency = relationship("Currencies",back_populates='supply')
     balances = relationship("Supplier_balance", back_populates='supply')

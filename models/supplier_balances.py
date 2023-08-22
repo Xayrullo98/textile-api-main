@@ -12,5 +12,6 @@ class Supplier_balance(Base):
     supplies_id = Column(Integer,ForeignKey("supplies.id"), nullable=False)
     user_id = Column(Integer, nullable=False)
 
+
     currency = relationship("Currencies",back_populates='balances')
     supply = relationship("Supplies",back_populates='balances')

@@ -14,11 +14,12 @@ def all_stage_user(search,stage_user_id, page, limit, db):
         search_filter = Stage_users.id > 0
     
     if stage_user_id:
-        search_stage_user_id= Stage_users.stage_user_id==stage_user_id
+        search_stage_user_id= Stage_users.stage_id==stage_user_id
     else:
-        search_stage_user_id = Stage_users.stage_user_id>0
+        search_stage_user_id = Stage_users.stage_id>0
     
-    stage_user = db.query(Stage_users).filter(search_filter,search_stage_user_id).order_by(Stage_users.id.desc())
+    stage_user = db.query(Stage_users).options(
+        joinedload(Stage_users.stage),joinedload(Stage_users.connected_user)).filter(search_filter,search_stage_user_id).order_by(Stage_users.id.desc())
     if page and limit:
         return pagination(stage_user, page, limit)
     else:
@@ -26,7 +27,7 @@ def all_stage_user(search,stage_user_id, page, limit, db):
 
 def one_stage_user(id, db):
     return db.query(Stage_users).options(
-        joinedload(Stage_users.order)).filter(Stage_users.id == id).first()
+        joinedload(Stage_users.stage),joinedload(Stage_users.connected_user)).filter(Stage_users.id == id).first()
 
 def create_stage_user(form, db, thisuser):
     the_one(db=db, model=Stages, id=form.stage_id, thisuser=thisuser)

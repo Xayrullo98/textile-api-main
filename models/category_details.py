@@ -13,5 +13,6 @@ class Category_details(Base):
     comment = Column(String(255), nullable=False)
     user_id = Column(Integer, nullable=False)
 
+
     measure = relationship("Measures", back_populates='category_detail')
     category = relationship("Categories", back_populates='category_detail')

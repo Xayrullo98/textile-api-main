@@ -24,7 +24,8 @@ def all_supplier_balances(search,supplier_balances_id,supplies_id, page, limit, 
     else:
         search_supplies_id = Supplier_balance.supplies_id > 0
 
-    supplier_balances = db.query(Supplier_balance).filter(search_filter,search_supplies_id,search_supplier_balances_id).order_by(Supplier_balance.id.desc())
+    supplier_balances = db.query(Supplier_balance).options(
+        joinedload(Supplier_balance.balance),joinedload(Supplier_balance.supply),joinedload(Supplier_balance.currency)).filter(search_filter,search_supplies_id,search_supplier_balances_id).order_by(Supplier_balance.id.desc())
     if page and limit:
         return pagination(supplier_balances, page, limit)
     else:
@@ -32,7 +33,7 @@ def all_supplier_balances(search,supplier_balances_id,supplies_id, page, limit, 
 
 def one_supplier_balance(id, db):
     return db.query(Supplier_balance).options(
-        joinedload(Supplier_balance.order)).filter(Supplier_balance.id == id).first()
+        joinedload(Supplier_balance.balance),joinedload(Supplier_balance.supply),joinedload(Supplier_balance.currency)).filter(Supplier_balance.id == id).first()
 
 def create_supplier_balance(form, db, thisuser):
     the_one(db=db, model=Supplies, id=form.supplies_id, thisuser=thisuser)

@@ -31,7 +31,7 @@ def create_user(form, db, thisuser):
         kpi=form.kpi,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
-    save_in_db(db, new_us222er_db)
+    save_in_db(db, new_user_db)
 
 
 def one_user(id, db):

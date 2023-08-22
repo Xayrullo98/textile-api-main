@@ -30,7 +30,8 @@ def all_supplies(search, detail_id, supply_id, currency_id, page, limit, db):
     else:
         search_currency_id = Supplies.currency_id > 0
 
-    supplies = db.query(Supplies).filter(search_filter, search_supply_id, search_currency_id,
+    supplies = db.query(Supplies).options(
+        joinedload(Supplies.currency),joinedload(Supplies.balances),joinedload(Supplies.supplier)).filter(search_filter, search_supply_id, search_currency_id,
                                          search_detail_id).order_by(
         Supplies.id.desc())
     if page and limit:
@@ -41,7 +42,7 @@ def all_supplies(search, detail_id, supply_id, currency_id, page, limit, db):
 
 def one_supplies(id, db):
     return db.query(Supplies).options(
-        joinedload(Supplies.order)).filter(Supplies.id == id).first()
+        joinedload(Supplies.currency),joinedload(Supplies.balances),joinedload(Supplies.supplier)).filter(Supplies.id == id).first()
 
 
 def create_supply(form, db, thisuser):

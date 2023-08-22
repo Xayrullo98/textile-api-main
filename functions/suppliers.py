@@ -13,7 +13,8 @@ def all_suppliers(search, page, limit, db):
     else:
         search_filter = Suppliers.id > 0
 
-    suppliers = db.query(Suppliers).filter(search_filter).order_by(
+    suppliers = db.query(Suppliers).options(
+        joinedload(Suppliers.supply)).filter(search_filter).order_by(
         Suppliers.id.desc())
     if page and limit:
         return pagination(suppliers, page, limit)
@@ -21,7 +22,7 @@ def all_suppliers(search, page, limit, db):
         return suppliers.all()
 def one_supplier(id, db):
     return db.query(Suppliers).options(
-        joinedload(Suppliers.order)).filter(Suppliers.id == id).first()
+        joinedload(Suppliers.supply)).filter(Suppliers.id == id).first()
 
 def create_supplier(form, db, thisuser):
     new_supplier_db = Suppliers(
