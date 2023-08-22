@@ -12,19 +12,15 @@ def all_measures(search, page, limit, db):
     else:
         search_filter = Measures.id > 0
 
-    measures = db.query(Measures).options(
-        joinedload(Measures.stage), joinedload(Measures.category_detail)).filter(search_filter).filter(
-        search_filter).order_by(Measures.id.desc())
+    measures = db.query(Measures).filter(search_filter).order_by(Measures.id.desc())
     if page and limit:
         return pagination(measures, page, limit)
     else:
         return measures.all()
 
-
 def one_measure(id, db):
     return db.query(Measures).options(
-        joinedload(Measures.stage), joinedload(Measures.category_detail)).filter(Measures.id == id).first()
-
+        joinedload(Measures.order)).filter(Measures.id == id).first()
 
 def create_measure(form, db, thisuser):
     new_measure_db = Measures(
