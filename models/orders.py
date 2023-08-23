@@ -6,6 +6,7 @@ from sqlalchemy import *
 from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
+from models.stages import Stages
 from models.users import Users
 
 
@@ -20,7 +21,7 @@ class Orders(Base):
     price = Column(Numeric)
     quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)
-    status = Column(Integer, nullable=False)
+    stage_id = Column(Integer, nullable=False)
     order_status = Column(Boolean)
 
     category = relationship("Categories", foreign_keys=[category_id],
@@ -31,4 +32,5 @@ class Orders(Base):
                           primaryjoin=lambda: and_(Clients.id == Orders.client_id))
     currency = relationship("Currencies", foreign_keys=[currency_id],
                             primaryjoin=lambda: and_(Currencies.id == Orders.currency_id))
-
+    stage_id = relationship("Stages", foreign_keys=[stage_id],
+                            primaryjoin=lambda: and_(Stages.id == Orders.stage_id))

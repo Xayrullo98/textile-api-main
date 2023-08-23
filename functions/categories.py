@@ -1,31 +1,30 @@
 from sqlalchemy.orm import joinedload
 
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.categories import Categories
 
 
-def all_categories(search, page, limit, db):
+def all_categories(search, status, page, limit, db):
+    categories = db.query(Categories)
     if search:
         search_formatted = "%{}%".format(search)
-        search_filter = Categories.name.like(search_formatted) | Categories.comment.like(search_formatted)
+        categories = categories.name.like(search_formatted) | Categories.comment.like(search_formatted)
     else:
-        search_filter = Categories.id > 0
-
-    categories = db.query(Categories).options(
-        joinedload(Categories.stage)).filter(search_filter).order_by(Categories.id.desc())
-    if page and limit:
-        return pagination(categories, page, limit)
+        categories = Categories.id > 0
+    if status:
+        categories = categories.filter(Categories.status == True)
+    elif status is False:
+        categories = categories.filter(Categories.status == False)
     else:
-        return categories.all()
+        categories = categories
+    categories = categories.order_by(Categories.id.desc())
 
-
-def one_category(id, db):
-    return db.query(Categories).options(
-        joinedload(Categories.order)).filter(Categories.id == id).first()
+    return pagination(categories, page, limit)
 
 
 def create_category(form, db, thisuser):
+    the_one_model_name(db, Categories, form.name)
     new_currencie_db = Categories(
         name=form.name,
         comment=form.comment,
@@ -36,6 +35,7 @@ def create_category(form, db, thisuser):
 
 def update_category(form, db, thisuser):
     the_one(db, Categories, form.id)
+    the_one_model_name(db, Categories, form.name)
     db.query(Categories).filter(Categories.id == form.id).update({
         Categories.name: form.name,
         Categories.comment: form.comment,

@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from models.currencies import Currencies
@@ -11,15 +12,16 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_incomes(page, limit, db):
+def all_incomes(currency_id, from_date, to_date, page, limit, db):
     incomes = db.query(Incomes).options(
         joinedload(Incomes.currency), joinedload(Incomes.order_source),
         joinedload(Incomes.kassa), joinedload(Incomes.user))
+    if currency_id:
+        incomes = incomes.filter(Incomes.id == currency_id)
+    elif from_date and to_date:
+        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date))
 
-    if page and limit:
-        return pagination(incomes, page, limit)
-    else:
-        return incomes
+    return pagination(incomes, page, limit)
 
 
 def one_income(ident, db):
@@ -32,12 +34,14 @@ def one_income(ident, db):
 
 
 def create_income(form, db, thisuser):
-    the_one(db, Kassas, form.kassa_id, thisuser)
-    the_one(db, Orders, form.source_id, thisuser)
-    the_one(db, Currencies, form.currency_id, thisuser)
+    if form.source not in ['order']:
+        raise HTTPException(status_code=400, detail='source error')
+    the_one(db, Kassas, form.kassa_id)
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     new_income_db = Incomes(
         currency_id=form.currency_id,
-        date=date.now(),
+        date=date.today(),
         money=form.money,
         source=form.source,
         source_id=form.source_id,
@@ -52,13 +56,15 @@ def create_income(form, db, thisuser):
 
 
 def update_income(form, db, thisuser):
-    the_one(db, Incomes, form.id, thisuser)
-    the_one(db, Kassas, form.kassa_id, thisuser)
-    the_one(db, Orders, form.source_id, thisuser)
-    the_one(db, Currencies, form.currency_id, thisuser)
+    if form.source not in ['order']:
+        raise HTTPException(status_code=400, detail='source error')
+    the_one(db, Incomes, form.id)
+    the_one(db, Kassas, form.kassa_id)
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     db.query(Incomes).filter(Incomes.id == form.id).update({
         Incomes.currency_id: form.currency_id,
-        Incomes.date: date,
+        Incomes.date: date.today(),
         Incomes.money: form.money,
         Incomes.source: form.source,
         Incomes.source_id: form.source_id,

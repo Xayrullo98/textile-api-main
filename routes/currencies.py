@@ -17,26 +17,25 @@ currencies_router = APIRouter(
 @currencies_router.post('/add', )
 def add_category_detail(form: CurrenciesCreate, db: Session = Depends(database),current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if create_currencie(form=form, thisuser=current_user, db=db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    create_currencie(form=form, thisuser=current_user, db=db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @currencies_router.get('/', status_code=200)
 def get_currencies(search: str = None,  id: int = 0,  page: int = 1,
                   limit: int = 25, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return the_one(db, Currencies, id)
-
     else:
         return all_currencies(search=search, page=page, limit=limit, db=db, )
 
 
 @currencies_router.put("/update")
 def category_detail_update(form: CurrenciesUpdate, db: Session = Depends(database),
-                    current_user: UserCurrent = Depends(get_current_active_user)):
-    if update_currencie(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+                           current_user: UserCurrent = Depends(get_current_active_user)):
+    update_currencie(form, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 

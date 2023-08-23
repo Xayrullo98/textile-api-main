@@ -10,26 +10,20 @@ from models.users import Users
 
 
 def all_users(search, page, limit, status, db):
-    # users = db.query(Users).options(joinedload(Users.phones))
+    users = db.query(Users).options(joinedload(Users.phones))
     if search:
         search_formatted = "%{}%".format(search)
-        search_filter = Users.name.like(search_formatted) | Users.address.like(
-            search_formatted) | Users.comment.like(search_formatted)
+        users = users.filter(Users.name.like(search_formatted) | Users.username.like(search_formatted))
     else:
-        search_filter = Users.id > 0
-
-    users = db.query(Users).filter(search_filter).options(joinedload(Users.phones)).order_by(
-        Users.id.desc())
-    if status==True:
+        users = users.filter(Users.id > 0)
+    if status:
         users = users.filter(Users.status==True)
-    if status==False:
+    elif status is True:
         users = users.filter(Users.status==False)
     else:
         users = users
-    if page and limit:
-        return pagination(users, page, limit)
-    else:
-        return users.all()
+    users = users.order_by(Users.id.desc())
+    return pagination(users, page, limit)
 
 
 def create_user(form, db, thisuser):
@@ -49,9 +43,7 @@ def create_user(form, db, thisuser):
         else:
             number = i.number
             create_phone(number=number, source='user', source_id=new_user_db.id, comment=comment, user_id=thisuser.id, db=db)
-    raise HTTPException(status_code=200, detail=f"Amaliyot muvvaffaqqiyatli bajarildi")
-
-
+    raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 
 
 def one_user( db, id):
@@ -86,4 +78,4 @@ def update_user(form, thisuser, db):
             number = i.number
             create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
                          db=db)
-    raise HTTPException(status_code=200, detail=f"Amaliyot muvvaffaqqiyatli bajarildi")
+    raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")

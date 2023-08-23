@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from models.currencies import Currencies
@@ -11,15 +12,16 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_expenses(page, limit, db):
+def all_expenses(currency_id, from_date, to_date, page, limit, db):
     expenses = db.query(Expenses).options(
         joinedload(Expenses.currency), joinedload(Expenses.order_source),
         joinedload(Expenses.kassa), joinedload(Expenses.user))
+    if currency_id:
+        expenses = expenses.filter(Expenses.id == currency_id)
+    elif from_date and to_date:
+        expenses = expenses.filter(and_(Expenses.date >= from_date, Expenses.date <= to_date))
 
-    if page and limit:
-        return pagination(expenses, page, limit)
-    else:
-        return expenses
+    return pagination(expenses, page, limit)
 
 
 def one_expense(ident, db):
@@ -32,9 +34,11 @@ def one_expense(ident, db):
 
 
 def create_expense(form, db, thisuser):
-    the_one(db, Kassas, form.kassa_id, thisuser)
-    the_one(db, Orders, form.source_id, thisuser)
-    the_one(db, Currencies, form.currency_id, thisuser)
+    the_one(db, Kassas, form.kassa_id)
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
+    if form.source not in ['supplier', 'user', 'expense']:
+        raise HTTPException(status_code=404, detail='source error')
     new_expense_db = Expenses(
         currency_id=form.currency_id,
         date=date.now(),
@@ -45,6 +49,7 @@ def create_expense(form, db, thisuser):
         user_id=thisuser.id,
     )
     save_in_db(db, new_expense_db)
+
     db.query(Kassas).filter(Kassas.id == form.id).update({
         Kassas.balance: Kassas.balance - form.money()
     })
@@ -52,13 +57,15 @@ def create_expense(form, db, thisuser):
 
 
 def update_expense(form, db, thisuser):
-    the_one(db, Expenses, form.id, thisuser)
-    the_one(db, Kassas, form.kassa_id, thisuser)
-    the_one(db, Orders, form.source_id, thisuser)
-    the_one(db, Currencies, form.currency_id, thisuser)
+    if form.source not in ['supplier', 'user', 'expence']:
+        raise HTTPException(status_code=404, detail='source error')
+    the_one(db, Expenses, form.id)
+    the_one(db, Kassas, form.kassa_id)
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     db.query(Expenses).filter(Expenses.id == form.id).update({
         Expenses.currency_id: form.currency_id,
-        Expenses.date: date,
+        Expenses.date: date.today(),
         Expenses.money: form.money,
         Expenses.source: form.source,
         Expenses.source_id: form.source_id,

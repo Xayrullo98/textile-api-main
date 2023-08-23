@@ -23,9 +23,10 @@ def add_category_detail(form: CreateStage, db: Session = Depends(database),curre
 
 @stages_router.get('/', status_code=200)
 def get_stages(search: str = None,  id: int = 0, page: int = 1,
-                  limit: int = 25, db: Session = Depends(database),
-                  current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+               limit: int = 25, db: Session = Depends(database),
+               current_user: UserCurrent = Depends(get_current_active_user)
+               ):
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_stage(id, db)
 

@@ -16,21 +16,11 @@ warehouse_products_router = APIRouter(
 
 
 @warehouse_products_router.get('/all')
-def get_warehouse_products(id: int = 0,  page: int = 1,
+def get_warehouse_products(id: int = 0, currency_id: int = 0, category_detail_id: int = 0, page: int = 1,
                            limit: int = 25, db: Session = Depends(database),
-                current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+                           current_user: UserCurrent = Depends(get_current_active_user)):
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_warehouse_p(id, db)
     else:
-        return all_warehouse_products(page=page, limit=limit, db=db)
-
-
-@warehouse_products_router.put("/update")
-def warehouse_product_update(form: UpdateWarehouse_products, db: Session = Depends(database),
-                             current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if update_warehouse_product(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
-
-
+        return all_warehouse_products(currency_id, category_detail_id, page=page, limit=limit, db=db)

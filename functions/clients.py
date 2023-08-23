@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
-from functions.phones import create_phone, update_phone
+from functions.phones import create_phone, update_phone, delete_phone
 from models.phones import Phones
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
@@ -16,9 +16,6 @@ def all_clients(search, page, limit, db):
         clients = clients.filter(Clients.name.like(search_formatted))
     else:
         clients = clients.filter(Clients.id > 0)
-
-    if page < 0 or limit < 0:
-        raise HTTPException(status_code=400, detail="page yoki limit 0 dan kichik kiritilmasligi kerak")
 
     clients = clients.order_by(Clients.id.desc())
 
@@ -39,15 +36,17 @@ def create_client(form, db, thisuser):
         comment=form.comment,
         user_id=thisuser.id,
     )
-    save_in_db(db, new_client_db)
+    db.add(new_client_db)
+    db.flush()
+
     for i in form.phones:
         comment = i.comment
-        if db.query(Phones).filter(Phones.number == i.number).first():
-            raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
-        else:
-            number = i.number
-            create_phone(number, 'client', new_client_db.id, comment, thisuser.id, db)
-    raise HTTPException(status_code=200, detail=f"{new_client_db.id} + id li mijoz yaratildi")
+        number = i.number
+        create_phone(number, 'client', new_client_db.id, comment, thisuser.id, db, commit=False)
+
+    db.commit()
+
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli bajarildi")
 
 
 def update_client(form, db, thisuser):
@@ -57,11 +56,17 @@ def update_client(form, db, thisuser):
         Clients.comment: form.comment,
         Clients.user_id: thisuser.id
     })
-    db.commit()
+
+    #source client ga teng bo'lgan nomerni yangilash
+    client_phones = db.query(Phones).filter(Phones.source_id == form.id).all()
+    for phone in client_phones:
+        delete_phone(id=phone.id, db=db)
 
     for i in form.phones:
-        phone_id = i.id
         comment = i.comment
         number = i.number
-        update_phone(phone_id, number, 'client', form.id, comment, thisuser.id, db)
+        create_phone(number=number, source='client', source_id=form.id, comment=comment, user_id=thisuser.id,
+                         db=db, commit=False)
+    db.commit()
+    raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 

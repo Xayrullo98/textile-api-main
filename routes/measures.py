@@ -14,23 +14,24 @@ measures_router = APIRouter(
     tags=["Measure operation"]
 )
 
+
 @measures_router.post('/add', )
 def add_category_detail(form: MeasureCreate, db: Session = Depends(database),current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_measure(form=form, thisuser=current_user, db=db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @measures_router.get('/', status_code=200)
-def get_measures(search: str = None,  id: int = 0,  page: int = 1,
-                  limit: int = 25, db: Session = Depends(database),
-                  current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+def get_measures(measure_id: int = 0, category_id: int = 0,
+                 search: str = None,  id: int = 0,  page: int = 1,
+                 limit: int = 25, db: Session = Depends(database),
+                 current_user: UserCurrent = Depends(get_current_active_user)):
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return the_one(db, Measures, id)
-
     else:
-        return all_measures(search=search, page=page, limit=limit, db=db, )
+        return all_measures(measure_id, category_id, search=search, page=page, limit=limit, db=db, )
 
 
 @measures_router.put("/update")

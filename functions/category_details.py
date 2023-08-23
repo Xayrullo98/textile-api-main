@@ -2,35 +2,32 @@ from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
 from models.measures import Measures
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
 from models.category_details import Category_details
 
 
 def all_category_details(search, measure_id, category_id, page, limit, db):
+    category_details = db.query(Category_details).options(
+        joinedload(Category_details.category, Category_details.measure))
     if search:
         search_formatted = "%{}%".format(search)
-        search_filter = Category_details.name.like(search_formatted) | Category_details.quantity.like(search_formatted)
+        category_details = category_details.name.like(search_formatted) | Category_details.quantity.like(search_formatted)
     else:
-        search_filter = Category_details.id > 0
+        category_details = Category_details.id > 0
     if measure_id:
-        search_measure_id = Category_details.measure_id == measure_id
+        category_details = category_details.filter(Category_details.measure_id == measure_id)
     else:
-        search_measure_id = Category_details.measure_id > 0
+        category_details = category_details.measure_id > 0
 
     if category_id:
-        search_category_id = Category_details.category_id == category_id
+        category_details = category_details.filter(Category_details.category_id == category_id)
     else:
-        search_category_id = Category_details.category_id > 0
+        category_details = category_details.category_id > 0
 
-    category_details = db.query(Category_details).options(
-        joinedload(Category_details.category, Category_details.measure, )).filter(search_filter, search_measure_id,
-                                                                                  search_category_id).order_by(
-        Category_details.id.desc())
-    if page and limit:
-        return pagination(category_details, page, limit)
-    else:
-        return category_details.all()
+    category_details = category_details.order_by(Category_details.id.desc())
+
+    return pagination(category_details, page, limit)
 
 
 def one_category_detail(id, db):
@@ -39,6 +36,7 @@ def one_category_detail(id, db):
 
 
 def create_category_detail(form, db, thisuser):
+    the_one_model_name(db, Category_details, form.name)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
     new_currencie_db = Category_details(
@@ -49,10 +47,10 @@ def create_category_detail(form, db, thisuser):
         comment=form.comment,
         user_id=thisuser.id, )
     save_in_db(db, new_currencie_db)
-    return new_currencie_db
 
 
 def update_category_detail(form, db, thisuser):
+    the_one_model_name(db, Category_details, form.name)
     the_one(db, Category_details, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)

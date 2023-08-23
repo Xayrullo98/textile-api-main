@@ -8,14 +8,14 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_warehouse_products(page, limit, db):
+def all_warehouse_products(currency_id, category_detail_id, page, limit, db):
     warehouse_products = db.query(Warehouse_products).options(
         joinedload(Warehouse_products.category_detail), joinedload(Warehouse_products.currency))
-
-    if page and limit:
-        return pagination(warehouse_products, page, limit)
-    else:
-        return warehouse_products
+    if category_detail_id:
+        warehouse_products = warehouse_products.filter(Warehouse_products.id == category_detail_id)
+    elif currency_id:
+        warehouse_products = warehouse_products.filter(Warehouse_products.id == currency_id)
+    return pagination(warehouse_products, page, limit)
 
 
 def one_warehouse_p(ident, db):
@@ -28,8 +28,8 @@ def one_warehouse_p(ident, db):
 
 
 def create_warehouse_product(category_detail_id, quantity, price, currency_id, db, thisuser):
-    the_one(db, Category_details, category_detail_id, thisuser)
-    the_one(db, Currencies, currency_id, thisuser)
+    the_one(db, Category_details, category_detail_id)
+    the_one(db, Currencies, currency_id)
     new_w_p_db = Warehouse_products(
         category_detail_id=category_detail_id,
         quantity=quantity,
@@ -40,9 +40,9 @@ def create_warehouse_product(category_detail_id, quantity, price, currency_id, d
 
 
 def update_warehouse_product(form, db, thisuser):
-    the_one(db, Warehouse_products, form.id, thisuser)
-    the_one(db, Category_details, form.category_detail_id, thisuser)
-    the_one(db, Currencies, form.currency_id, thisuser)
+    the_one(db, Warehouse_products, form.id)
+    the_one(db, Category_details, form.category_detail_id)
+    the_one(db, Currencies, form.currency_id)
     db.query(Warehouse_products).filter(Warehouse_products.id == form.id).update({
         Warehouse_products.category_detail_id: form.category_detail_id,
         Warehouse_products.quantity: form.quantity,

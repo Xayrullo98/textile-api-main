@@ -28,16 +28,16 @@ def get_clients(search: str = None,  id: int = 0,  page: int = 1,
 @client_router.post('/create')
 def client_create(form: CreateClient, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if create_client(form=form, thisuser=current_user, db=db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
+    create_client(form=form, thisuser=current_user, db=db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @client_router.put("/update")
 def client_update(form: UpdateClient, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
     # role_verification(current_user, inspect.currentframe().f_code.co_name)
-    if update_client(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    update_client(form, db, current_user)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 

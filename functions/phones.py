@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from utils.db_operations import save_in_db
 from utils.pagination import pagination
 from models.phones import Phones
@@ -14,7 +16,9 @@ def all_phones(search, page, limit, db, branch_id):
     return pagination(phones, page, limit)
 
 
-def create_phone(number, source, source_id, comment, user_id, db):
+def create_phone(number, source, source_id, comment, user_id, db, commit=True):
+    if db.query(Phones).filter(Phones.number == number).first():
+        raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
     new_phone_db = Phones(
         number=number,
         comment=comment,
@@ -22,10 +26,15 @@ def create_phone(number, source, source_id, comment, user_id, db):
         source_id=source_id,
         user_id=user_id
     )
-    save_in_db(db, new_phone_db)
+    db.add(new_phone_db)
+
+    if commit:
+        db.commit()
 
 
-def update_phone(phone_id, number, source, source_id, comment, user_id, db):
+def update_phone(phone_id, number, source, source_id, comment, user_id, db,  commit=True):
+    if db.query(Phones).filter(Phones.number == number).first():
+        raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
     db.query(Phones).filter(Phones.id == phone_id).update({
         Phones.number: number,
         Phones.comment: comment,
@@ -33,7 +42,9 @@ def update_phone(phone_id, number, source, source_id, comment, user_id, db):
         Phones.source_id: source_id,
         Phones.user_id: user_id
     })
-    db.commit()
+    if commit:
+        db.commit()
+
 
 def delete_phone(id, db):
     db.query(Phones).filter(Phones.id == id).delete()
