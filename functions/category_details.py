@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
@@ -31,9 +32,10 @@ def all_category_details(search, measure_id, category_id, page, limit, db):
 
 
 def one_category_detail(id, db):
-    return db.query(Category_details).options(
+    the_item = db.query(Category_details).options(
         joinedload(Category_details.category, Category_details.measure, )).filter(Categories.id == id).first()
-
+    if the_item is None:
+        raise HTTPException(status_code=400, detail="Bu malumot bazada mavjud")
 
 def create_category_detail(form, db, thisuser):
     the_one_model_name(db, Category_details, form.name)
@@ -50,10 +52,11 @@ def create_category_detail(form, db, thisuser):
 
 
 def update_category_detail(form, db, thisuser):
-    the_one_model_name(db, Category_details, form.name)
-    the_one(db, Category_details, form.id)
+    category_detail = the_one(db, Category_details, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
+    if db.query(Category_details).filter(Category_details.name == form.name).first() and category_detail.name != form.name:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday number({form.number}) mavjud!")
     db.query(Category_details).filter(Category_details.id == form.id).update({
         Category_details.name: form.name,
         Category_details.quantity: form.quantity,

@@ -19,6 +19,7 @@ category_details_router = APIRouter(
 def add_category_detail(form: Category_detailsCreate,
                         db: Session = Depends(database),
                         current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_category_detail(form=form, thisuser=current_user, db=db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
@@ -34,13 +35,15 @@ def get_category_details(search: str = None,  id: int = 0, measure_id: int = 0,
         return one_category_detail(id, db)
 
     else:
-        return all_category_details(search=search, measure_id=measure_id,category_id=category_id,  page=page, limit=limit, db=db, )
+        return all_category_details(search=search, measure_id=measure_id, category_id=category_id,
+                                    page=page, limit=limit, db=db)
 
 
 @category_details_router.put("/update")
 def category_detail_update(form: Category_detailsUpdate, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
-    if update_category_detail(form, current_user, db):
-        raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
+    update_category_detail(form, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
