@@ -77,7 +77,6 @@ def update_supply(form, db, thisuser):
 
 def delete_supply(id, db, thisuser):
     the_one(db=db, model=Supplies, id=id)
-
     db.query(Supplies).filter(Supplies.id == id).update({
         Supplies.status: False,
         Supplies.user_id: thisuser.id

@@ -27,7 +27,7 @@ def all_users(search, page, limit, status, db):
 
 
 def create_user(form, db, thisuser):
-    the_one_username(db=db, model=Users, username=form.username, thisuser=thisuser)
+    the_one_username(db=db, model=Users, username=form.username)
     new_user_db = Users(
         name=form.name,
         username=form.username,
@@ -35,18 +35,17 @@ def create_user(form, db, thisuser):
         kpi=form.kpi,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
-    save_in_db(db, new_user_db)
+    db.add(new_user_db)
+    db.flush()
     for i in form.phones:
         comment = i.comment
-        if db.query(Phones).filter(Phones.number == i.number).first():
-            raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
-        else:
-            number = i.number
-            create_phone(number=number, source='user', source_id=new_user_db.id, comment=comment, user_id=thisuser.id, db=db)
+        number = i.number
+        create_phone(number=number, source='user', source_id=new_user_db.id, comment=comment, user_id=thisuser.id, db=db,  commit=False)
+    db.commit()
     raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 
 
-def one_user( db, id):
+def one_user(db, id):
     the_item = db.query(Users).options(
         joinedload(Users.phones)).filter(Users.id == id).first()
     if the_item:
@@ -56,6 +55,8 @@ def one_user( db, id):
 
 def update_user(form, thisuser, db):
     user = the_one(db=db, model=Users, id=form.id)
+    if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:
+        raise HTTPException(status_code=400, detail="Bu username bazada mavjud")
     db.query(Users).filter(Users.id == form.id).update({
         Users.name: form.name,
         Users.username: form.username,
@@ -65,17 +66,15 @@ def update_user(form, thisuser, db):
         Users.role: form.role,
 
     })
-    db.commit()
+
     user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
     for phone in user_phones:
         delete_phone(id=phone.id, db=db)
 
     for i in form.phones:
         comment = i.comment
-        if db.query(Phones).filter(Phones.number == i.number).first():
-            raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
-        else:
-            number = i.number
-            create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
-                         db=db)
+        number = i.number
+        create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
+                         db=db,  commit=False)
+    db.commit()
     raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")

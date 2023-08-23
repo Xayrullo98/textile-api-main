@@ -2,16 +2,13 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class CurrenciesBase(BaseModel):
-    name: str    
-    money: float = Field(..., ge=0)
+class CurrenciesCreate(BaseModel):
+    name: str
+    money: float = Field(..., ge=0.1)
 
 
-class CurrenciesCreate(CurrenciesBase):
-    pass
-
-
-class CurrenciesUpdate(CurrenciesBase):
+class CurrenciesUpdate(BaseModel):
     id: int
-    status: bool
+    name: str
+    money: float = Field(..., ge=0.1)
 

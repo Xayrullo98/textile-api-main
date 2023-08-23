@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
@@ -6,15 +7,15 @@ from models.measures import Measures
 
 
 def all_measures(search, page, limit, db):
-    measures = db.query(Measures)
+    measures_query = db.query(Measures)
     if search:
-        search_formatted = "%{}%".format(search)
-        measures = measures.name.like(search_formatted)
+        search_formatted = f"%{search}%"
+        measures_query = measures_query.filter(Measures.name.ilike(search_formatted))
     else:
-        measures = Measures.id > 0
+        measures_query = measures_query.filter(Measures.id > 0)
 
-    measures = measures.order_by(Measures.id.desc())
-    return pagination(measures, page, limit)
+    measures_query = measures_query.order_by(Measures.id.desc())
+    return pagination(measures_query, page, limit)
 
 
 def create_measure(form, db, thisuser):
@@ -25,9 +26,10 @@ def create_measure(form, db, thisuser):
     save_in_db(db, new_measure_db)
 
 
-def update_measure(form, db, thisuser):
-    the_one(db, Measures, form.id)
-    the_one_model_name(db, Measures, form.name)
+def update_measure(form,  thisuser, db):
+    measure = the_one(db, Measures, form.id)
+    if db.query(Measures).filter(Measures.name == form.name).first() and measure.name != form.name:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday name({form.name}) mavjud!")
     db.query(Measures).filter(Measures.id == form.id).update({
         Measures.name: form.name,
         Measures.user_id: thisuser.id

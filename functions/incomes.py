@@ -50,7 +50,7 @@ def create_income(form, db, thisuser):
     )
     save_in_db(db, new_income_db)
     db.query(Kassas).filter(Kassas.id == form.id).update({
-        Kassas.balance: Kassas.balance + form.money()
+        Kassas.balance: Kassas.balance + form.money
     })
     db.commit()
 
@@ -58,10 +58,12 @@ def create_income(form, db, thisuser):
 def update_income(form, db, thisuser):
     if form.source not in ['order']:
         raise HTTPException(status_code=400, detail='source error')
-    the_one(db, Incomes, form.id)
-    the_one(db, Kassas, form.kassa_id)
+    old_income = the_one(db, Incomes, form.id)
+
+    kassa = the_one(db, Kassas, form.kassa_id)
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
+    kassa_balance = kassa.balance - old_income.money + form.money
     db.query(Incomes).filter(Incomes.id == form.id).update({
         Incomes.currency_id: form.currency_id,
         Incomes.date: date.today(),
@@ -72,5 +74,10 @@ def update_income(form, db, thisuser):
         Incomes.user_id: thisuser.id
     })
     db.commit()
+    db.query(Kassas).filter(Kassas.id == form.id).update({
+        Kassas.balance: Kassas.balance + kassa_balance
+    })
+    db.commit()
+
 
 

@@ -16,8 +16,9 @@ categories_router = APIRouter(
 
 
 @categories_router.post('/add', )
-def add_category_detail(form: CreateCategory, db: Session = Depends(database),
-                        current_user: UserCurrent = Depends(get_current_active_user)):
+def add_category(form: CreateCategory, db: Session = Depends(database),
+                 current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_category(form=form, thisuser=current_user, db=db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
@@ -25,8 +26,9 @@ def add_category_detail(form: CreateCategory, db: Session = Depends(database),
 
 @categories_router.get('/', status_code=200)
 def get_categories(search: str = None,  id: int = 0, status: bool = None, page: int = 1,
-                  limit: int = 25, db: Session = Depends(database),
-                  current_user: UserCurrent = Depends(get_current_active_user)):
+                   limit: int = 25, db: Session = Depends(database),
+                   current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return the_one(db=db, model=Categories, id=id)
@@ -35,8 +37,10 @@ def get_categories(search: str = None,  id: int = 0, status: bool = None, page: 
 
 
 @categories_router.put("/update")
-def category_detail_update(form: UpdateCategory, db: Session = Depends(database),
+def category_update(form: UpdateCategory, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
+
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_category(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 

@@ -32,5 +32,5 @@ class Orders(Base):
                           primaryjoin=lambda: and_(Clients.id == Orders.client_id))
     currency = relationship("Currencies", foreign_keys=[currency_id],
                             primaryjoin=lambda: and_(Currencies.id == Orders.currency_id))
-    stage_id = relationship("Stages", foreign_keys=[stage_id],
+    stage = relationship("Stages", foreign_keys=[stage_id],
                             primaryjoin=lambda: and_(Stages.id == Orders.stage_id))

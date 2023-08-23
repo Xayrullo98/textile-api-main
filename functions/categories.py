@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
@@ -6,21 +7,24 @@ from models.categories import Categories
 
 
 def all_categories(search, status, page, limit, db):
-    categories = db.query(Categories)
-    if search:
-        search_formatted = "%{}%".format(search)
-        categories = categories.name.like(search_formatted) | Categories.comment.like(search_formatted)
-    else:
-        categories = Categories.id > 0
-    if status:
-        categories = categories.filter(Categories.status == True)
-    elif status is False:
-        categories = categories.filter(Categories.status == False)
-    else:
-        categories = categories
-    categories = categories.order_by(Categories.id.desc())
+    categories_query = db.query(Categories)
 
-    return pagination(categories, page, limit)
+    if search:
+        search_formatted = f"%{search}%"
+        search_filter = Categories.name.ilike(search_formatted) | Categories.comment.ilike(search_formatted)
+        categories_query = categories_query.filter(search_filter)
+    else:
+        categories_query = categories_query.filter(Categories.id > 0)
+
+    if status:
+        categories_query = categories_query.filter(Categories.status == True)
+    elif status is False:
+        categories_query = categories_query.filter(Categories.status == False)
+    else:
+        categories = categories_query
+    categories_query = categories_query.order_by(Categories.id.desc())
+
+    return pagination(categories_query, page, limit)
 
 
 def create_category(form, db, thisuser):
@@ -33,9 +37,10 @@ def create_category(form, db, thisuser):
     return new_currencie_db
 
 
-def update_category(form, db, thisuser):
-    the_one(db, Categories, form.id)
-    the_one_model_name(db, Categories, form.name)
+def update_category(form, thisuser, db):
+    category = the_one(db, Categories, form.id)
+    if db.query(Categories).filter(Categories.name == form.name).first() and category.name != form.name:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday name({form.name}) mavjud!")
     db.query(Categories).filter(Categories.id == form.id).update({
         Categories.name: form.name,
         Categories.comment: form.comment,

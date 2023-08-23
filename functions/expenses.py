@@ -1,3 +1,4 @@
+from _decimal import Decimal
 from datetime import date
 
 from fastapi import HTTPException
@@ -34,43 +35,58 @@ def one_expense(ident, db):
 
 
 def create_expense(form, db, thisuser):
-    the_one(db, Kassas, form.kassa_id)
+    kassa = the_one(db, Kassas, form.kassa_id)
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
-    new_expense_db = Expenses(
-        currency_id=form.currency_id,
-        date=date.now(),
-        money=form.money,
-        source=form.source,
-        source_id=form.source_id,
-        comment=form.comment,
-        user_id=thisuser.id,
-    )
-    save_in_db(db, new_expense_db)
+    if form.money <= kassa.balance:
+        new_expense_db = Expenses(
+            currency_id=form.currency_id,
+            date=date.now(),
+            money=form.money,
+            source=form.source,
+            source_id=form.source_id,
+            comment=form.comment,
+            user_id=thisuser.id,
+        )
+        save_in_db(db, new_expense_db)
 
-    db.query(Kassas).filter(Kassas.id == form.id).update({
-        Kassas.balance: Kassas.balance - form.money()
-    })
-    db.commit()
+        db.query(Kassas).filter(Kassas.id == form.id).update({
+            Kassas.balance: Kassas.balance - form.money
+        })
+        db.commit()
+    else:
+        raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
 
 def update_expense(form, db, thisuser):
     if form.source not in ['supplier', 'user', 'expence']:
         raise HTTPException(status_code=404, detail='source error')
-    the_one(db, Expenses, form.id)
-    the_one(db, Kassas, form.kassa_id)
+    old_expense = the_one(db, Expenses, form.id)
+    kassa = the_one(db, Kassas, form.kassa_id)
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
-    db.query(Expenses).filter(Expenses.id == form.id).update({
-        Expenses.currency_id: form.currency_id,
-        Expenses.date: date.today(),
-        Expenses.money: form.money,
-        Expenses.source: form.source,
-        Expenses.source_id: form.source_id,
-        Expenses.comment: form.comment,
-        Expenses.user_id: thisuser.id
-    })
-    db.commit()
+    # agar kassada yetarli pul mavjud bo'lsa kassadan ayiramiz, aks holda xatolik chiqaaradi
+    if kassa.balance >= form.money:
+        db.query(Expenses).filter(Expenses.id == form.id).update({
+            Expenses.currency_id: form.currency_id,
+            Expenses.date: date.today(),
+            Expenses.money: form.money,
+            Expenses.source: form.source,
+            Expenses.source_id: form.source_id,
+            Expenses.comment: form.comment,
+            Expenses.user_id: thisuser.id
+        })
+
+        db.query(Kassas).filter(Kassas.id == form.id).update({
+            Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
+        })
+        db.commit()
+
+    else:
+        raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
+
+
+
 

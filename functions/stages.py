@@ -10,21 +10,24 @@ from models.stages import Stages
 
 
 def all_stages(measure_id, category_id, search, page, limit, db):
-    stages = db.query(Stages).options(joinedload(Stages.category),
-                                      joinedload(Stages.measure),
-                                      joinedload(Stages.stage_user))
+    stages_query = db.query(Stages).options(joinedload(Stages.category),
+                                            joinedload(Stages.measure),
+                                            joinedload(Stages.stage_user))
     if measure_id:
-        stages = stages.filter(Stages.id == measure_id)
+        stages_query = stages_query.filter(Stages.id == measure_id)
     elif category_id:
-        stages = stages.filter(Stages.id == category_id)
-    if search:
-        search_formatted = "%{}%".format(search)
-        stages = stages.name.like(search_formatted)
-    else:
-        stages = Stages.id > 0
+        stages_query = stages_query.filter(Stages.id == category_id)
 
-    stages = stages.order_by(Stages.id.desc())
-    return pagination(stages, page, limit)
+    if search:
+        search_formatted = f"%{search}%"
+        search_filter = Stages.name.ilike(search_formatted)
+        stages_query = stages_query.filter(search_filter)
+    else:
+        stages_query = stages_query.filter(Stages.id > 0)
+
+    stages_query = stages_query.order_by(Stages.id.desc())
+
+    return pagination(stages_query, page, limit)
 
 
 def one_stage(id, db):
@@ -41,13 +44,14 @@ def create_stage(form, db, thisuser):
     existing_stage = db.query(Stages).filter(and_(Stages.number == form.number, Stages.name == form.name)).first()
     if existing_stage:
         raise HTTPException(status_code=400, detail="Bir xil nom uchun number bir xil bo'laolmaydi")
-
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
     new_stage_db = Stages(
         name=form.name,
         number=form.number,
         kpi=form.kpi,
+        comment=form.comment,
+        status=form.status,
         measure_id=form.measure_id,
         category_id=form.category_id,
         user_id=thisuser.id, )

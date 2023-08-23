@@ -1,15 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class MeasureBase(BaseModel):
-    name: str    
+
+class MeasureCreate(BaseModel):
+    name: str
 
 
-class MeasureCreate(MeasureBase):
-    pass
-
-
-class MeasureUpdate(MeasureBase):
+class MeasureUpdate(BaseModel):
     id: int
-    status: bool
+    name: str
 
