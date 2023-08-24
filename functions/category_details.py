@@ -10,7 +10,7 @@ from models.category_details import Category_details
 
 def all_category_details(search, measure_id, category_id, page, limit, db):
     category_details = db.query(Category_details).options(
-        joinedload(Category_details.category, Category_details.measure))
+        joinedload(Category_details.category),joinedload(Category_details.measure))
     if search:
         search_formatted = "%{}%".format(search)
         category_details = category_details.name.like(search_formatted) | Category_details.quantity.like(search_formatted)
