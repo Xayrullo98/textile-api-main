@@ -65,12 +65,8 @@ def get_current_user(db: Session = Depends(database), token: str = Depends(oauth
 async def get_current_active_user(current_user: CreateUser = Depends(get_current_user)):
     return current_user
 
-
-@login_router.post("/token", response_model=Token)
-async def login_for_access_token(
-    db: Session = Depends(database),
-    form_data: OAuth2PasswordRequestForm = Depends()
-):
+@login_router.post("/token")
+async def login_for_access_token(db: Session = Depends(database), form_data: OAuth2PasswordRequestForm = Depends()):
     user = db.query(Users).where(Users.username == form_data.username).first()
     if user:
         is_validate_password = pwd_context.verify(form_data.password, user.password_hash)
@@ -80,26 +76,19 @@ async def login_for_access_token(
     if not is_validate_password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Username or password did not match",
+            detail="Login yoki parolda xatolik",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username},
-        expires_delta=access_token_expires
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
     db.query(Users).filter(Users.id == user.id).update({
         Users.token: access_token
     })
     db.commit()
-
-    return {
-        'id': user.id,
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return {'id': user.id, "access_token": access_token, "token_type": "bearer", "role": user.role}
 
 
 @login_router.post("/refresh_token", response_model=Token)
@@ -133,6 +122,6 @@ async def refresh_token(
     return {
         'id': user.id,
         "access_token": access_token,
+        "user_role": user.role,
         "token_type": "bearer"
     }
-

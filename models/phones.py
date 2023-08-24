@@ -24,16 +24,16 @@ class Phones(Base):
 
     this_user = relationship('Users', foreign_keys=[source_id],
                              primaryjoin=lambda: and_(Users.id == Phones.source_id, Phones.source == "user"),
-                             backref=backref("phones"))
+                             backref=backref("user_phones"))
 
     this_client = relationship('Clients', foreign_keys=[source_id],
                                 primaryjoin=lambda: and_(Clients.id == Phones.source_id,
-                                                          Phones.source == "client"), backref=backref("phones"))
+                                                          Phones.source == "client"), backref=backref("client_phones"))
 
     this_supplier = relationship('Suppliers', foreign_keys=[source_id],
                                  primaryjoin=lambda: and_(Suppliers.id == Phones.source_id,
-                                                          Phones.source == "suppliers"), backref=backref("phones"))
+                                                          Phones.source == "suppliers"), backref=backref("supplier_phones"))
 
     this_kassa = relationship('Kassas', foreign_keys=[source_id],
                               primaryjoin=lambda: and_(Kassas.id == Phones.source_id, Phones.source == "kassa"),
-                              backref=backref("phones"))
+                              backref=backref("kassa_phones"))

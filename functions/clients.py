@@ -1,16 +1,16 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
-from functions.phones import create_phone, update_phone, delete_phone
+from functions.phones import create_phone, delete_phone
 from models.phones import Phones
+from models.users import Users
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 from models.clients import Clients
 
 
 def all_clients(search, page, limit, db):
-    clients = db.query(Clients).options(joinedload(Clients.user), joinedload(Clients.phones))
-
+    clients = db.query(Clients).options(joinedload(Clients.user).load_only(Users.name), joinedload(Clients.client_phones))
     if search:
         search_formatted = f"%{search}%"
         clients = clients.filter(Clients.name.like(search_formatted))

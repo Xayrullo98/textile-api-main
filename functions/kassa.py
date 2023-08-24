@@ -5,12 +5,12 @@ from functions.phones import create_phone, delete_phone
 from models.currencies import Currencies
 from models.kassa import Kassas
 from models.phones import Phones
-from utils.db_operations import save_in_db, the_one, the_one_model_name
+from utils.db_operations import  the_one, the_one_model_name
 from utils.pagination import pagination
 
 
 def all_kassas(currency_id, search, page, limit, db):
-    kassas = db.query(Kassas).options(joinedload(Kassas.user), joinedload(Kassas.currency), joinedload(Kassas.phones))
+    kassas = db.query(Kassas).options(joinedload(Kassas.user), joinedload(Kassas.currency), joinedload(Kassas.kassa_phones))
 
     if search:
         search_formatted = f"%{search}%"
@@ -26,7 +26,7 @@ def all_kassas(currency_id, search, page, limit, db):
 def one_kassa(ident, db):
     the_item = db.query(Kassas).options(
         joinedload(Kassas.user), joinedload(Kassas.currency),
-        joinedload(Kassas.phones)
+        joinedload(Kassas.kassa_phones)
     ).filter(Kassas.id == ident).first()
     if the_item is None:
         raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")

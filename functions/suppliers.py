@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
 from functions.phones import create_phone, delete_phone
@@ -15,15 +16,19 @@ def all_suppliers(search, page, limit, db):
     else:
         search_filter = Suppliers.id > 0
 
-    suppliers = db.query(Suppliers).filter(search_filter).order_by(
+    suppliers = db.query(Suppliers).options(joinedload(Suppliers.supplier_phones)).filter(search_filter).order_by(
         Suppliers.id.desc())
-    if page and limit:
-        return pagination(suppliers, page, limit)
-    else:
-        return suppliers.all()
-def one_supplier(id, db):
-    return db.query(Suppliers).options(
-        joinedload(Suppliers.order)).filter(Suppliers.id == id).first()
+
+    return pagination(suppliers, page, limit)
+
+
+def one_supplier(ident, db):
+    the_item = db.query(Suppliers).options(
+        joinedload(Suppliers.user), joinedload(Suppliers.supplier_phones)).filter(Suppliers.id == ident).first()
+    if the_item is None:
+        raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")
+    return the_item
+
 
 def create_supplier(form, db, thisuser):
     the_one_model_name(model=Suppliers, name=form.name, db=db)
@@ -31,7 +36,8 @@ def create_supplier(form, db, thisuser):
         name=form.name,
         address=form.address,
         comment=form.comment,
-        user_id=thisuser.id, )
+        user_id=thisuser.id,
+    )
     save_in_db(db, new_supplier_db)
     for i in form.phones:
         comment = i.comment
