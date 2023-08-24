@@ -1,4 +1,4 @@
 import datetime
 
-timee = datetime.datetime.now().strftime("%d")
+timee = datetime.datetime.utcnow().strftime("%d")
 print(timee)

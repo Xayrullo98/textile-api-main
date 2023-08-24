@@ -3,13 +3,15 @@ from datetime import date
 
 from fastapi import HTTPException
 from sqlalchemy import and_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 
+from db import SessionLocal
 from functions.users import sup_user_balance
 from models.currencies import Currencies
 from models.expenses import Expenses
 from models.kassa import Kassas
 from models.orders import Orders
+from models.users import Users
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -64,8 +66,8 @@ def create_expense(form, db, thisuser):
     else:
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
-    if form.source=="user":
-        sup_user_balance(user_id=form.source_id,money=form.money,db=db)
+    if form.source == "user":
+        sup_user_balance(user_id=form.source_id, money=form.money, db=db)
 
 
 def update_expense(form, db, thisuser):
@@ -99,5 +101,12 @@ def update_expense(form, db, thisuser):
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
 
-
-
+def add_salary_to_workers():
+    db: Session = SessionLocal()
+    users = db.query(Users).filter(Users.status==True).all()
+    for user in users:
+        user_balance = user.balance + user.salary
+        db.query(Users).filter(Users.id == user.id).update({
+            Users.balance: user_balance
+        })
+        db.commit()
