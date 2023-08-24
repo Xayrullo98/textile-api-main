@@ -12,4 +12,5 @@ class Categories(Base):
     status = Column(Boolean, nullable=False,default=True)
     user_id = Column(Integer, nullable=False)
 
-    stage= relationship("Stages", back_populates='category')
+    category_detail = relationship('Category_details', back_populates='category')
+    stage = relationship("Stages", back_populates='category')
