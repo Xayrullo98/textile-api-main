@@ -14,9 +14,9 @@ def all_stages(measure_id, category_id, search, page, limit, db):
                                             joinedload(Stages.measure),
                                             joinedload(Stages.stage_user))
     if measure_id:
-        stages_query = stages_query.filter(Stages.id == measure_id)
+        stages_query = stages_query.filter(Stages.measure_id == measure_id)
     elif category_id:
-        stages_query = stages_query.filter(Stages.id == category_id)
+        stages_query = stages_query.filter(Stages.category_id == category_id)
 
     if search:
         search_formatted = f"%{search}%"
@@ -39,11 +39,11 @@ def one_stage(id, db):
     return the_item
 
 
-def create_stage(form, db, thisuser):
+def create_stage(form, thisuser, db):
     the_one_model_name(db, Stages, form.name)
-    existing_stage = db.query(Stages).filter(and_(Stages.number == form.number, Stages.name == form.name)).first()
+    existing_stage = db.query(Stages).filter(and_(Stages.number == form.number, Stages.category_id == form.category_id)).first()
     if existing_stage:
-        raise HTTPException(status_code=400, detail="Bir xil nom uchun number bir xil bo'laolmaydi")
+        raise HTTPException(status_code=400, detail="Bir xil category_id uchun number bir xil bo'laolmaydi")
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
     new_stage_db = Stages(
@@ -58,14 +58,16 @@ def create_stage(form, db, thisuser):
     save_in_db(db, new_stage_db)
 
 
-def update_stage(form, db, thisuser):
-    the_one_model_name(db, Stages, form.name)
-    existing_stage = db.query(Stages).filter(and_(Stages.number == form.number, Stages.name == form.name)).first()
-    if existing_stage:
-        raise HTTPException(status_code=400, detail="Bir xil nom uchun number bir xil bo'laolmaydi")
-    the_one(db, Stages, form.id)
+def update_stage(form, thisuser, db):
+    stage = the_one(db, Stages, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
+    if db.query(Stages).filter(Stages.name == form.name).first() and stage.name != form.name:
+        raise HTTPException(status_code=400, detail=f"Bazada bunday name({form.name}) mavjud!")
+    existing_stage = db.query(Stages).filter(
+        and_(Stages.number == form.number, Stages.category_id == form.category_id)).first()
+    if existing_stage and stage.category_id != form.category_id:
+        raise HTTPException(status_code=400, detail="Bir xil category_id uchun number bir xil bo'laolmaydi")
     db.query(Stages).filter(Stages.id == form.id).update({
         Stages.name: form.name,
         Stages.number: form.number,

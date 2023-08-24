@@ -14,9 +14,10 @@ stages_router = APIRouter(
     tags=["Stage operation"]
 )
 
+
 @stages_router.post('/add', )
 def add_stage(form: CreateStage, db: Session = Depends(database),
-                        current_user: UserCurrent = Depends(get_current_active_user)):
+              current_user: UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_stage(form=form, thisuser=current_user, db=db)
@@ -29,6 +30,7 @@ def get_stages(search: str = None, measure_id: int = 0, category_id: int = 0,
                limit: int = 25, db: Session = Depends(database),
                current_user: UserCurrent = Depends(get_current_active_user)
                ):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_stage(id, db)

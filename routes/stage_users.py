@@ -16,25 +16,28 @@ stage_users_router = APIRouter(
 @stage_users_router.post('/add', )
 def add_stage_user(form: CreateStage_user, db: Session = Depends(database),
                    current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_stage_user(form=form, thisuser=current_user, db=db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
 @stage_users_router.get('/', status_code=200)
-def get_stage_users(stage_id: int = 0, category_id: int = 0, search: str = None,  id: int = 0, stage_user_id: int = 0,  page: int = 1,
+def get_stage_users(stage_id: int = 0, search: str = None,  id: int = 0, page: int = 1,
                     limit: int = 25, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_stage_user(id, db)
     else:
-        return all_stage_user(stage_id, category_id, search=search, page=page, limit=limit, db=db, stage_user_id=stage_user_id )
+        return all_stage_user(stage_id, search=search, page=page, limit=limit, db=db)
 
 
 @stage_users_router.put("/update")
-def category_detail_update(form: UpdateStage_user, db: Session = Depends(database),
-                    current_user: UserCurrent = Depends(get_current_active_user)):
+def stage_user_update(form: UpdateStage_user, db: Session = Depends(database),
+                      current_user: UserCurrent = Depends(get_current_active_user)):
+
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_stage_user(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
