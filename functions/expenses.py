@@ -38,12 +38,14 @@ def create_expense(form, db, thisuser):
     kassa = the_one(db, Kassas, form.kassa_id)
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
+    if kassa.currency_id != form.currency_id:
+        raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
     if form.money <= kassa.balance:
         new_expense_db = Expenses(
             currency_id=form.currency_id,
-            date=date.now(),
+            date=date.today(),
             money=form.money,
             source=form.source,
             source_id=form.source_id,
@@ -65,6 +67,8 @@ def update_expense(form, db, thisuser):
         raise HTTPException(status_code=404, detail='source error')
     old_expense = the_one(db, Expenses, form.id)
     kassa = the_one(db, Kassas, form.kassa_id)
+    if kassa.currency_id != form.currency_id:
+        raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
     # agar kassada yetarli pul mavjud bo'lsa kassadan ayiramiz, aks holda xatolik chiqaaradi

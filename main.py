@@ -32,9 +32,9 @@ app.include_router(categories.categories_router)
 app.include_router(stages.stages_router)
 app.include_router(stage_users.stage_users_router)
 
-
 app.include_router(category_details.category_details_router)
 
+app.include_router(clients.client_router)
 app.include_router(supplier_balances.supplier_balances_router)
 app.include_router(suppliers.suppliers_router)
 app.include_router(supplies.supplies_router)
@@ -47,6 +47,6 @@ app.include_router(expenses.expenses_router)
 app.include_router(incomes.incomes_router)
 app.include_router(order_histories.order_histories_router)
 
-app.include_router(clients.client_router)
+
 app.include_router(broken_products.broken_products_router)
 

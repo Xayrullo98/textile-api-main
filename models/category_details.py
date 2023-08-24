@@ -2,8 +2,6 @@ from db import Base
 from sqlalchemy import Column, String, Integer, and_, ForeignKey
 from sqlalchemy.orm import relationship
 
-from models.categories import Categories
-from models.measures import Measures
 from models.users import Users
 
 

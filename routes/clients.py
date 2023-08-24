@@ -18,7 +18,7 @@ client_router = APIRouter(
 def get_clients(search: str = None,  id: int = 0,  page: int = 1,
                 limit: int = 25, db: Session = Depends(database),
                 current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_client(id, db)
     else:
@@ -36,7 +36,7 @@ def client_create(form: CreateClient, db: Session = Depends(database),
 @client_router.put("/update")
 def client_update(form: UpdateClient, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
-    # role_verification(current_user, inspect.currentframe().f_code.co_name)
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_client(form, db, current_user)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 

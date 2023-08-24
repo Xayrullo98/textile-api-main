@@ -10,21 +10,21 @@ from models.category_details import Category_details
 
 def all_category_details(search, measure_id, category_id, page, limit, db):
     category_details = db.query(Category_details).options(
-        joinedload(Category_details.category, Category_details.measure))
+        joinedload(Category_details.category), joinedload(Category_details.measure))
     if search:
         search_formatted = "%{}%".format(search)
         category_details = category_details.name.like(search_formatted) | Category_details.quantity.like(search_formatted)
     else:
-        category_details = Category_details.id > 0
+        category_details = category_details
     if measure_id:
         category_details = category_details.filter(Category_details.measure_id == measure_id)
     else:
-        category_details = category_details.measure_id > 0
+        category_details = category_details
 
     if category_id:
         category_details = category_details.filter(Category_details.category_id == category_id)
     else:
-        category_details = category_details.category_id > 0
+        category_details = category_details
 
     category_details = category_details.order_by(Category_details.id.desc())
 
