@@ -38,15 +38,26 @@ def one_order_history(ident, db):
 def create_order_history(order_id, stage_id, kpi_money, thisuser, db):
     the_one(db, Orders, order_id)
     the_one(db, Stages, stage_id)
-    new_order_h_db = Order_histories(
-        order_id=order_id,
-        date=date.today(),
-        stage_id=stage_id,
-        kpi_money=kpi_money,
-        user_id=thisuser.id,
+    if type(thisuser)=='int':
 
-    )
-    save_in_db(db, new_order_h_db)
+        new_order_h_db = Order_histories(
+            order_id=order_id,
+            date=date.today(),
+            stage_id=stage_id,
+            kpi_money=kpi_money,
+            user_id=thisuser,
+        )
+        save_in_db(db, new_order_h_db)
+    else:
+        new_order_h_db = Order_histories(
+            order_id=order_id,
+            date=date.today(),
+            stage_id=stage_id,
+            kpi_money=kpi_money,
+            user_id=thisuser.id,
+        )
+
+        save_in_db(db, new_order_h_db)
 
 
 def update_order_history(id, order_id, stage_id, kpi_money, db, thisuser):

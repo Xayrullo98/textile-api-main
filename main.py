@@ -1,10 +1,12 @@
 from typing import Union
 from fastapi import FastAPI
+import datetime
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_utils.tasks import repeat_every
 
 from routes import supplier_balances, suppliers, supplies, currencies, category_details, \
     measures, stage_users, stages, users, categories, login, clients, broken_products, kassas, warehouse_products, \
-    orders, expenses, incomes, order_histories
+    orders, expenses, incomes, order_histories,order_done_products,order_for_masters
 
 app = FastAPI()
 
@@ -43,6 +45,9 @@ app.include_router(warehouse_products.warehouse_products_router)
 app.include_router(kassas.kassa_router)
 
 app.include_router(orders.orders_router)
+app.include_router(order_for_masters.order_for_masters_router)
+app.include_router(order_done_products.order_done_products_router)
+
 app.include_router(expenses.expenses_router)
 app.include_router(incomes.incomes_router)
 app.include_router(order_histories.order_histories_router)
@@ -50,3 +55,13 @@ app.include_router(order_histories.order_histories_router)
 
 app.include_router(broken_products.broken_products_router)
 
+
+
+
+@app.on_event("startup")
+@repeat_every(seconds=3600, wait_first=True)
+async def check():
+    timee = datetime.datetime.now().strftime("%d") == "03"
+
+    if timee:
+        await select_other_works_deadline()

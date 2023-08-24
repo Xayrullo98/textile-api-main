@@ -17,9 +17,9 @@ def all_users(search, page, limit, status, db):
     else:
         users = users.filter(Users.id > 0)
     if status:
-        users = users.filter(Users.status==True)
+        users = users.filter(Users.status == True)
     elif status is True:
-        users = users.filter(Users.status==False)
+        users = users.filter(Users.status == False)
     else:
         users = users
     users = users.order_by(Users.id.desc())
@@ -32,7 +32,7 @@ def create_user(form, db, thisuser):
         name=form.name,
         username=form.username,
         salary=form.salary,
-        kpi=form.kpi,
+        balance=form.balance,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
     db.add(new_user_db)
@@ -40,7 +40,8 @@ def create_user(form, db, thisuser):
     for i in form.phones:
         comment = i.comment
         number = i.number
-        create_phone(number=number, source='user', source_id=new_user_db.id, comment=comment, user_id=thisuser.id, db=db,  commit=False)
+        create_phone(number=number, source='user', source_id=new_user_db.id, comment=comment, user_id=thisuser.id,
+                     db=db, commit=False)
     db.commit()
     raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 
@@ -75,6 +76,23 @@ def update_user(form, thisuser, db):
         comment = i.comment
         number = i.number
         create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
-                         db=db,  commit=False)
+                     db=db, commit=False)
     db.commit()
     raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
+
+
+def add_user_balance(user_id, money, db):
+    user = db.query(Users).filter(Users.id == user_id).first()
+    user_balance = user.balance + money
+    db.query(Users).filter(Users.id == user_id).update({
+        Users.balance: user_balance
+    })
+    db.commit()
+
+def sup_user_balance(user_id, money, db):
+    user = db.query(Users).filter(Users.id == user_id).first()
+    user_balance = user.balance - money
+    db.query(Users).filter(Users.id == user_id).update({
+        Users.balance: user_balance
+    })
+    db.commit()

@@ -19,3 +19,5 @@ class Stages(Base):
     measure = relationship("Measures", back_populates='stage')
     category = relationship("Categories", back_populates='stage')
     stage_user = relationship("Stage_users", back_populates='stage')
+    order_done_product = relationship("Order_done_products", back_populates='stage')
+    order_for_master = relationship("Order_for_masters", back_populates='stage')

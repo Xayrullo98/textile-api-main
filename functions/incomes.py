@@ -48,11 +48,12 @@ def create_income(form, db, thisuser):
         money=form.money,
         source=form.source,
         source_id=form.source_id,
+        kassa_id=form.kassa_id,
         comment=form.comment,
         user_id=thisuser.id,
     )
     save_in_db(db, new_income_db)
-    db.query(Kassas).filter(Kassas.id == form.id).update({
+    db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
         Kassas.balance: Kassas.balance + form.money
     })
     db.commit()
@@ -62,12 +63,12 @@ def update_income(form, db, thisuser):
     if form.source not in ['order']:
         raise HTTPException(status_code=400, detail='source error')
     old_income = the_one(db, Incomes, form.id)
-
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     kassa = the_one(db, Kassas, form.kassa_id)
     if kassa.currency_id != form.currency_id:
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
-    the_one(db, Orders, form.source_id)
-    the_one(db, Currencies, form.currency_id)
+
     kassa_balance = kassa.balance - old_income.money + form.money
     db.query(Incomes).filter(Incomes.id == form.id).update({
         Incomes.currency_id: form.currency_id,
@@ -75,11 +76,12 @@ def update_income(form, db, thisuser):
         Incomes.money: form.money,
         Incomes.source: form.source,
         Incomes.source_id: form.source_id,
+        Incomes.kassa_id: form.kassa_id,
         Incomes.comment: form.comment,
         Incomes.user_id: thisuser.id
     })
     db.commit()
-    db.query(Kassas).filter(Kassas.id == form.id).update({
+    db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
         Kassas.balance: Kassas.balance + kassa_balance
     })
     db.commit()

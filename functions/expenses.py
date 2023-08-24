@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
+from functions.users import sup_user_balance
 from models.currencies import Currencies
 from models.expenses import Expenses
 from models.kassa import Kassas
@@ -50,16 +51,21 @@ def create_expense(form, db, thisuser):
             source=form.source,
             source_id=form.source_id,
             comment=form.comment,
+            kassa_id=form.kassa_id,
             user_id=thisuser.id,
         )
         save_in_db(db, new_expense_db)
 
-        db.query(Kassas).filter(Kassas.id == form.id).update({
+        db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
             Kassas.balance: Kassas.balance - form.money
         })
         db.commit()
+
     else:
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
+
+    if form.source=="user":
+        sup_user_balance(user_id=form.source_id,money=form.money,db=db)
 
 
 def update_expense(form, db, thisuser):
@@ -79,11 +85,12 @@ def update_expense(form, db, thisuser):
             Expenses.money: form.money,
             Expenses.source: form.source,
             Expenses.source_id: form.source_id,
+            Expenses.kassa_id: form.kassa_id,
             Expenses.comment: form.comment,
             Expenses.user_id: thisuser.id
         })
 
-        db.query(Kassas).filter(Kassas.id == form.id).update({
+        db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
             Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
         })
         db.commit()
