@@ -5,7 +5,7 @@ from utils.pagination import pagination
 from models.phones import Phones
 
 
-def all_phones(search, page, limit, db, branch_id):
+def all_phones(search, page, limit, db):
     phones = db.query(Phones)
     if search:
         search_formatted = f"%{search}%"
