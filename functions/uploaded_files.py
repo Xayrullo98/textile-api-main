@@ -1,5 +1,7 @@
 import os
-from fastapi import HTTPException
+from typing import List
+
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
@@ -32,8 +34,11 @@ def one_file(ident, db):
 
 
 def create_file(new_file, source, source_id, comment, thisuser, db):
+    if source not in ['category']:
+        raise HTTPException(status_code=400, detail="Source error")
+    the_one(db, Categories, source_id)
     if db.query(Uploaded_files).filter(Uploaded_files.source == source,
-                                 Uploaded_files.source_id == source_id).first():
+                                       Uploaded_files.source_id == source_id).first():
         raise HTTPException(status_code=400, detail="This source already have his own file!")
     if db.query(Categories).filter(Categories.id == source_id).first() and source == "category":
         file_location = new_file.filename
@@ -56,6 +61,9 @@ def create_file(new_file, source, source_id, comment, thisuser, db):
 
 def update_file(id, new_file, source, source_id, comment, this_user, db):
     the_one(db, Uploaded_files, id)
+    if source not in ['category']:
+        raise HTTPException(status_code=400, detail="Source error")
+    the_one(db, Categories, source_id)
     this_file = db.query(Uploaded_files).filter(Uploaded_files.source == source,
                                                 Uploaded_files.source_id == source_id).first()
     if this_file and this_file.id != id:

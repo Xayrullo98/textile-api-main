@@ -87,7 +87,7 @@ def update_expense(form, db, thisuser):
         db.query(Expenses).filter(Expenses.id == form.id).update({
             Expenses.currency_id: form.currency_id,
             Expenses.date: date.today(),
-            Expenses.money: form.money,
+            Expenses.money: form.money, #user.kpi - form.money
             Expenses.source: form.source,
             Expenses.source_id: form.source_id,
             Expenses.comment: form.comment,
