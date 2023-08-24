@@ -1,5 +1,5 @@
 from db import Base
-from sqlalchemy import Column, Integer, Numeric, and_
+from sqlalchemy import Column, Integer, Numeric, and_,Boolean
 from sqlalchemy.orm import relationship
 from models.category_details import Category_details
 from models.currencies import Currencies
@@ -12,6 +12,7 @@ class Warehouse_products(Base):
     quantity = Column(Numeric)
     price = Column(Numeric)
     currency_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=True)
 
     category_detail = relationship('Category_details', foreign_keys=[category_detail_id],
                                    primaryjoin=lambda: and_(Category_details.id == Warehouse_products.category_detail_id))

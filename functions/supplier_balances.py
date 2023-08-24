@@ -50,6 +50,15 @@ def create_supplier_balance(form, db, thisuser):
     save_in_db(db, new_supplier_balance_db)
 
 
+def create_supplier_balance_func(balance, currencies_id, supplies_id, db, thisuser):
+    new_supplier_balance_db = Supplier_balance(
+        balance=balance,
+        currencies_id=currencies_id,
+        supplies_id=supplies_id,
+        user_id=thisuser.id, )
+    save_in_db(db, new_supplier_balance_db)
+
+
 def update_supplier_balance(form, db, thisuser):
     the_one(db, Supplier_balance, form.id)
     the_one(db=db, model=Supplies, id=form.supplies_id, )
