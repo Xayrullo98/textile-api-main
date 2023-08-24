@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes import supplier_balances, suppliers, supplies, currencies, category_details, \
     measures, stage_users, stages, users, categories, login, clients, broken_products, kassas, warehouse_products, \
-    orders, expenses, incomes, order_histories
+    orders, expenses, incomes, order_histories, uploaded_files
 
 app = FastAPI()
 
@@ -49,4 +49,5 @@ app.include_router(order_histories.order_histories_router)
 
 
 app.include_router(broken_products.broken_products_router)
+app.include_router(uploaded_files.uploaded_files_router)
 

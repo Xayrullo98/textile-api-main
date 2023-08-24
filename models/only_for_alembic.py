@@ -19,3 +19,4 @@ from models.kassa import Kassas
 from models.orders import Orders
 from models.order_histories import Order_histories
 from models.warehouse_products import Warehouse_products
+from models.uploaded_files import Uploaded_files

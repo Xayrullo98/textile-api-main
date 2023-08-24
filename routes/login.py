@@ -84,19 +84,19 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username},
         expires_delta=access_token_expires
     )
     db.query(Users).filter(Users.id == user.id).update({
-        Users.token: access_token
+        Users.token: access_token,
     })
     db.commit()
 
     return {
         'id': user.id,
+        "user_role": user.role,
         "access_token": access_token,
         "token_type": "bearer"
     }
@@ -133,6 +133,6 @@ async def refresh_token(
     return {
         'id': user.id,
         "access_token": access_token,
+        "user_role": user.role,
         "token_type": "bearer"
     }
-

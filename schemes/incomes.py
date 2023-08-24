@@ -1,8 +1,10 @@
+from decimal import Decimal
+
 from pydantic import BaseModel, Field
 
 
 class CreateIncome(BaseModel):
-    money: float = Field(..., ge=0)
+    money: Decimal = Field(..., ge=0)
     currency_id: int
     source: str
     source_id: int
@@ -12,7 +14,7 @@ class CreateIncome(BaseModel):
 
 class UpdateIncome(BaseModel):
     id: int
-    money: float = Field(..., ge=0)
+    money: Decimal = Field(..., ge=0)
     currency_id: int
     source: str
     source_id: int

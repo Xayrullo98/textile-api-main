@@ -9,6 +9,8 @@ from models.currencies import Currencies
 from models.expenses import Expenses
 from models.kassa import Kassas
 from models.orders import Orders
+from models.suppliers import Suppliers
+from models.users import Users
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -42,6 +44,11 @@ def create_expense(form, db, thisuser):
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
+    if db.query(Expenses).filter(Expenses.id == form.source_id).first() and form.source == "expense" or\
+            db.query(Suppliers).filter(Suppliers.id == form.source_id).first() and form.source == "supplier" or\
+            db.query(Users).filter(Users.id == form.source_id).first() and form.source == "user":
+        raise HTTPException(status_code=400, detail="source va source_id bir biriga mos kelmadi")
+
     if form.money <= kassa.balance:
         new_expense_db = Expenses(
             currency_id=form.currency_id,
@@ -71,6 +78,10 @@ def update_expense(form, db, thisuser):
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
+    if db.query(Expenses).filter(Expenses.id == form.source_id).first() and form.source == "expense" or\
+            db.query(Suppliers).filter(Suppliers.id == form.source_id).first() and form.source == "supplier" or\
+            db.query(Users).filter(Users.id == form.source_id).first() and form.source == "user":
+        raise HTTPException(status_code=400, detail="source va source_id bir biriga mos kelmadi")
     # agar kassada yetarli pul mavjud bo'lsa kassadan ayiramiz, aks holda xatolik chiqaaradi
     if kassa.balance >= form.money:
         db.query(Expenses).filter(Expenses.id == form.id).update({
@@ -84,7 +95,7 @@ def update_expense(form, db, thisuser):
         })
 
         db.query(Kassas).filter(Kassas.id == form.id).update({
-            Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
+            Kassas.balance: Kassas.balance - old_expense.money + form.money
         })
         db.commit()
 

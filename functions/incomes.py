@@ -34,14 +34,17 @@ def one_income(ident, db):
 
 
 def create_income(form, db, thisuser):
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     if form.source not in ['order']:
         raise HTTPException(status_code=400, detail='source error')
     kassa = the_one(db, Kassas, form.kassa_id)
     if kassa.currency_id != form.currency_id:
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
 
-    the_one(db, Orders, form.source_id)
-    the_one(db, Currencies, form.currency_id)
+    if db.query(Orders).filter(Orders.id == form.source_id).first() and form.source == "order":
+        raise HTTPException(status_code=400, detail="source va source_id bir biriga mos kelmadi")
+
     new_income_db = Incomes(
         currency_id=form.currency_id,
         date=date.today(),
@@ -59,6 +62,8 @@ def create_income(form, db, thisuser):
 
 
 def update_income(form, db, thisuser):
+    the_one(db, Orders, form.source_id)
+    the_one(db, Currencies, form.currency_id)
     if form.source not in ['order']:
         raise HTTPException(status_code=400, detail='source error')
     old_income = the_one(db, Incomes, form.id)
@@ -66,9 +71,11 @@ def update_income(form, db, thisuser):
     kassa = the_one(db, Kassas, form.kassa_id)
     if kassa.currency_id != form.currency_id:
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
-    the_one(db, Orders, form.source_id)
-    the_one(db, Currencies, form.currency_id)
     kassa_balance = kassa.balance - old_income.money + form.money
+
+    if db.query(Orders).filter(Orders.id == form.source_id).first() and form.source == "order":
+        raise HTTPException(status_code=400, detail="source va source_id bir biriga mos kelmadi")
+
     db.query(Incomes).filter(Incomes.id == form.id).update({
         Incomes.currency_id: form.currency_id,
         Incomes.date: date.today(),

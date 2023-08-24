@@ -10,7 +10,7 @@ from models.users import Users
 
 
 def all_users(search, page, limit, status, db):
-    users = db.query(Users).options(joinedload(Users.phones))
+    users = db.query(Users).options(joinedload(Users.user_phones))
     if search:
         search_formatted = "%{}%".format(search)
         users = users.filter(Users.name.like(search_formatted) | Users.username.like(search_formatted))
@@ -47,7 +47,7 @@ def create_user(form, db, thisuser):
 
 def one_user(db, id):
     the_item = db.query(Users).options(
-        joinedload(Users.phones)).filter(Users.id == id).first()
+        joinedload(Users.user_phones)).filter(Users.id == id).first()
     if the_item:
         return the_item
     raise HTTPException(status_code=400, detail="bunday user mavjud emas")
