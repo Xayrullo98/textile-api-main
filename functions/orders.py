@@ -19,15 +19,15 @@ def all_orders(client_id, category_id, currency_id, stage_id, from_date, to_date
         joinedload(Orders.client), joinedload(Orders.currency), joinedload(Orders.user),
         joinedload(Orders.category))
     if client_id:
-        orders = orders.filter(Orders.id == client_id)
+        orders = orders.filter(Orders.client_id == client_id)
     elif from_date and to_date:
         orders = orders.filter(and_(Orders.date >= from_date, Orders.date <= to_date))
     elif category_id:
-        orders = orders.filter(Orders.id == category_id)
+        orders = orders.filter(Orders.category_id == category_id)
     elif currency_id:
-        orders = orders.filter(Orders.id == currency_id)
+        orders = orders.filter(Orders.currency_id == currency_id)
     elif stage_id:
-        orders = orders.filter(Orders.id == stage_id)
+        orders = orders.filter(Orders.stage_id == stage_id)
 
     return pagination(orders, page, limit)
 

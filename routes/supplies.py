@@ -14,7 +14,8 @@ supplies_router = APIRouter(
     tags=["Supplies operation"]
 )
 
-@supplies_router.post('/add', )
+
+@supplies_router.post('/add')
 def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_user:
                 UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -24,7 +25,7 @@ def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_us
 
 @supplies_router.get('/', status_code=200)
 def get_supplies(search: str = None,  id: int = 0,
-                 detail_id: int = 0, supplier_id: int = 0,
+                 category_detail_id: int = 0, supplier_id: int = 0,
                  currency_id=0,  page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
@@ -33,12 +34,15 @@ def get_supplies(search: str = None,  id: int = 0,
         return one_supply(id, db)
 
     else:
-        return all_supplies(search=search, page=page, limit=limit, db=db,detail_id=detail_id, supplier_id=supplier_id, currency_id=currency_id, )
+        return all_supplies(search=search, category_detail_id=category_detail_id,
+                            supplier_id=supplier_id, currency_id=currency_id,  page=page, limit=limit, db=db)
 
 
 @supplies_router.put("/update")
 def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
+
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_supply(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
@@ -46,5 +50,6 @@ def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
 @supplies_router.delete("/delete")
 def supply_delete(id: int, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
     delete_supply(id, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")

@@ -28,6 +28,8 @@ def all_users(search, page, limit, status, db):
 
 def create_user(form, db, thisuser):
     the_one_username(db=db, model=Users, username=form.username)
+    if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
+        raise HTTPException(status_code=400, detail="Role error")
     new_user_db = Users(
         name=form.name,
         username=form.username,
@@ -56,6 +58,8 @@ def one_user(db, id):
 
 def update_user(form, thisuser, db):
     user = the_one(db=db, model=Users, id=form.id)
+    if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
+        raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:
         raise HTTPException(status_code=400, detail="Bu username bazada mavjud")
     db.query(Users).filter(Users.id == form.id).update({

@@ -2,7 +2,7 @@ import inspect
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from functions.users import create_user, update_user, all_users, one_user
-from models.users import Users
+
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
 from schemes.users import CreateUser,UpdateUser

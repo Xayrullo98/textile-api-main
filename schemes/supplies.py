@@ -1,20 +1,22 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class SuppliesBase(BaseModel):
-    detail_id: int
-    quantity: int
-    price: int
+class SuppliesCreate(BaseModel):
+    category_detail_id: int
+    quantity: float = Field(..., ge=0.1)
+    price: float = Field(..., ge=0.1)
     supplier_id: int
     currency_id: int
 
 
-class SuppliesCreate(SuppliesBase):
-    pass
-
-
-class SuppliesUpdate(SuppliesBase):
+class SuppliesUpdate(BaseModel):
     id: int
+    category_detail_id: int
+    quantity: float = Field(..., ge=0.1)
+    price: float = Field(..., ge=0.1)
+    supplier_id: int
+    currency_id: int
     received_user_id: int
     status: bool
+

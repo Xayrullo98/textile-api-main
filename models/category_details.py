@@ -20,4 +20,5 @@ class Category_details(Base):
 
     measure = relationship('Measures', back_populates='category_detail')
     category = relationship('Categories', back_populates='category_detail')
+    supply = relationship('Supplies', back_populates='category_detail')
 

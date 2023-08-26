@@ -31,7 +31,6 @@ def one_supplier(ident, db):
 
 
 def create_supplier(form, db, thisuser):
-    the_one_model_name(model=Suppliers, name=form.name, db=db)
     new_supplier_db = Suppliers(
         name=form.name,
         address=form.address,

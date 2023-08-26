@@ -7,50 +7,52 @@ from utils.pagination import pagination
 from models.supplier_balances import Supplier_balance
 
 
-def all_supplier_balances(search, supplier_balances_id, supplies_id, page, limit, db):
+def all_supplier_balances(search, currencies_id, supplies_id, page, limit, db):
+    supplier_balances = db.query(Supplier_balance).options(joinedload(Supplier_balance.supply),
+                                                           joinedload(Supplier_balance.currency))
+
     if search:
         search_formatted = "%{}%".format(search)
-        search_filter = Supplier_balance.balance.like(search_formatted)
+        supplier_balances = supplier_balances.balance.like(search_formatted)
     else:
-        search_filter = Supplier_balance.id > 0
+        supplier_balances = supplier_balances.filter(Supplier_balance.id > 0)
 
-    if supplier_balances_id:
-        search_supplier_balances_id = Supplier_balance.supplier_balances_id == supplier_balances_id
+    if currencies_id:
+        supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id == currencies_id)
     else:
-        search_supplier_balances_id = Supplier_balance.supplier_balances_id > 0
+        supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id > 0)
 
     if supplies_id:
-        search_supplies_id = Supplier_balance.supplies_id == supplies_id
+        supplier_balances = supplier_balances.filter(Supplier_balance.supplies_id == supplies_id)
     else:
-        search_supplies_id = Supplier_balance.supplies_id > 0
+        supplier_balances = supplier_balances.filter(Supplier_balance.supplies_id > 0)
 
-    supplier_balances = db.query(Supplier_balance).filter(search_filter, search_supplies_id,
-                                                          search_supplier_balances_id).order_by(
-        Supplier_balance.id.desc())
-    if page and limit:
-        return pagination(supplier_balances, page, limit)
-    else:
-        return supplier_balances.all()
+    supplier_balances = supplier_balances.order_by(Supplier_balance.id.desc())
+    return pagination(supplier_balances, page, limit)
 
 
 def one_supplier_balance(id, db):
-    return db.query(Supplier_balance).options(
-        joinedload(Supplier_balance.order)).filter(Supplier_balance.id == id).first()
+    return db.query(Supplier_balance).options(joinedload(Supplier_balance.supply),
+                                              joinedload(Supplier_balance.currency)).\
+        filter(Supplier_balance.id == id).first()
 
 
 def create_supplier_balance(form, db, thisuser):
-    the_one_model_name(model=Supplier_balance, name=form.name, db=db)
+
     the_one(db=db, model=Supplies, id=form.supplies_id)
     the_one(db=db, model=Currencies, id=form.currencies_id)
     new_supplier_balance_db = Supplier_balance(
         balance=form.balance,
         currencies_id=form.currencies_id,
         supplies_id=form.supplies_id,
-        user_id=thisuser.id, )
+        user_id=thisuser.id
+    )
     save_in_db(db, new_supplier_balance_db)
 
 
 def create_supplier_balance_func(balance, currencies_id, supplies_id, db, thisuser):
+    the_one(db, Supplies, supplies_id)
+    the_one(db, Currencies, currencies_id)
     new_supplier_balance_db = Supplier_balance(
         balance=balance,
         currencies_id=currencies_id,
@@ -64,7 +66,7 @@ def update_supplier_balance(form, db, thisuser):
     the_one(db=db, model=Supplies, id=form.supplies_id, )
     the_one(db=db, model=Currencies, id=form.currencies_id, )
     db.query(Supplier_balance).filter(Supplier_balance.id == form.id).update({
-        Supplier_balance.supplier_balances_id: form.supplier_balances_id,
+        Supplier_balance.currencies_id: form.currencies_id,
         Supplier_balance.supplies_id: form.supplies_id,
         Supplier_balance.balance: form.balance,
         Supplier_balance.user_id: thisuser.id
