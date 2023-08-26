@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, Integer, String, Boolean, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Numeric, ForeignKey,Float
 
 
 class Stages(Base):
@@ -12,7 +12,7 @@ class Stages(Base):
     comment = Column(String(255), nullable=False)
     user_id = Column(Integer, nullable=False)
     status = Column(Boolean, nullable=False)
-    kpi = Column(Numeric, nullable=False)
+    kpi = Column(Float, nullable=False)
     measure_id = Column(Integer, ForeignKey("measures.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
 

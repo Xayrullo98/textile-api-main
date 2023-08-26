@@ -84,3 +84,8 @@ def update_order(form, db, thisuser):
     #shu yerda order histiry ni update qilyapmiz
     # id, order_id, stage_id, kpi_money, db, thisuser
     # update_order_history()
+def update_order_stage(order_id,stage_id,db):
+
+    db.query(Orders).filter(Orders.id == order_id).update({
+        Orders.stage_id: stage_id })
+    db.commit()

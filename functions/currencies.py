@@ -29,8 +29,8 @@ def create_currency(form, db, thisuser):
 
 def update_currency(form, db, thisuser):
     currency = the_one(db, Currencies, form.id)
-    if db.query(Currencies).filter(Currencies.name == form.name) and currency.name != form.name:
-        raise HTTPException(status_code=400, detail="Bu currency name bazada mavjud")
+    # if db.query(Currencies).filter(Currencies.name == form.name) and currency.name != form.name:
+    #     raise HTTPException(status_code=400, detail="Bu currency name bazada mavjud")
     db.query(Currencies).filter(Currencies.id == form.id).update({
         Currencies.name: form.name,
         Currencies.money: form.money,

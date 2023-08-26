@@ -38,7 +38,8 @@ def one_order_history(ident, db):
 def create_order_history(order_id, stage_id, kpi_money, thisuser, db):
     the_one(db, Orders, order_id)
     the_one(db, Stages, stage_id)
-    if type(thisuser)=='int':
+
+    if str(thisuser).isdigit():
 
         new_order_h_db = Order_histories(
             order_id=order_id,

@@ -10,7 +10,7 @@ from models.stages import Stages
 
 
 def all_stages(measure_id, category_id, search, page, limit, db):
-    stages_query = db.query(Stages).options(joinedload(Stages.cate),
+    stages_query = db.query(Stages).options(joinedload(Stages.category),
                                             joinedload(Stages.measure),
                                             joinedload(Stages.stage_user))
     if measure_id:
@@ -32,7 +32,7 @@ def all_stages(measure_id, category_id, search, page, limit, db):
 
 def one_stage(id, db):
     the_item = db.query(Stages).options(
-        joinedload(Stages.cate), joinedload(Stages.measure),
+        joinedload(Stages.category), joinedload(Stages.measure),
         joinedload(Stages.stage_user)).filter(Stages.id == id).first()
     if the_item is None:
         raise HTTPException(status_code=400, detail="Bazada bunday malumot mavjud emas")

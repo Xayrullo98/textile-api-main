@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, Integer, ForeignKey, Float
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, func
 
 
 class Order_done_products(Base):
@@ -12,6 +12,7 @@ class Order_done_products(Base):
     user_id = Column(Integer, nullable=False)
     worker_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     quantity = Column(Float, nullable=False)
+    datetime = Column(DateTime, default=func.now(), nullable=False)
 
     stage = relationship("Stages", back_populates='order_done_product')
     order = relationship("Orders", back_populates='order_done_product')

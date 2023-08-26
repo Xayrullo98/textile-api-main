@@ -5,6 +5,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from functions.order_histories import create_order_history
+from functions.orders import update_order_stage
 from functions.stages import one_stage
 from functions.users import  add_user_balance
 from models.order_done_products import Order_done_products
@@ -55,6 +56,7 @@ def create_order_done_product(form, thisuser, db):
     money = form.quantity * stage.kpi
     create_order_history(order_id=form.order_id, stage_id=form.stage_id, kpi_money=money, thisuser=form.worker_id, db=db)
     add_user_balance(user_id=form.worker_id, money=money, db=db)
+    update_order_stage(order_id=form.order_id,stage_id=form.stage_id,db=db)
 
 
 def update_order_done_product(form, db, thisuser):

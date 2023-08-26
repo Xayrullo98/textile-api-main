@@ -4,6 +4,7 @@ import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
 
+from functions.expenses import add_salary_to_workers
 from routes import supplier_balances, suppliers, supplies, currencies, category_details, \
     measures, stage_users, stages, users, categories, login, clients, broken_products, kassas, warehouse_products, \
     orders, expenses, incomes, order_histories,order_done_products,order_for_masters
@@ -59,9 +60,9 @@ app.include_router(broken_products.broken_products_router)
 
 
 @app.on_event("startup")
-@repeat_every(seconds=3600, wait_first=True)
+@repeat_every(seconds=86400, wait_first=True)
 async def check():
     timee = datetime.datetime.now().strftime("%d") == "03"
 
     if timee:
-        await select_other_works_deadline()
+        await add_salary_to_workers()

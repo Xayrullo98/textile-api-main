@@ -12,7 +12,7 @@ from models.users import Users
 class Expenses(Base):
     __tablename__ = 'expenses'
     id = Column(Integer, autoincrement=True, primary_key=True)
-    money = Column(Numeric, nullable=False)
+    money = Column(Float, nullable=False)
     currency_id = Column(Integer, nullable=False)
     date = Column(Date)
     user_id = Column(Integer, nullable=False)
