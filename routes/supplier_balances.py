@@ -26,7 +26,7 @@ def add_category_detail(form: Supplier_balanceCreate, db: Session = Depends(data
 
 
 @supplier_balances_router.get('/', status_code=200)
-def get_supplier_balances(search: str = None, id: int = 0, supplier_balances_id: int = 0, supplies_id: int = 0,
+def get_supplier_balances(search: str = None, id: int = 0, currencies_id: int = 0, supplies_id: int = 0,
                           page: int = 1,
                           limit: int = 25, db: Session = Depends(database),
                           current_user: UserCurrent = Depends(get_current_active_user)):
@@ -36,7 +36,7 @@ def get_supplier_balances(search: str = None, id: int = 0, supplier_balances_id:
 
     else:
         return all_supplier_balances(search=search, page=page, limit=limit, db=db,
-                                     supplier_balances_id=supplier_balances_id, supplies_id=supplies_id, )
+                                     currencies_id=currencies_id, supplies_id=supplies_id, )
 
 
 @supplier_balances_router.put("/update")

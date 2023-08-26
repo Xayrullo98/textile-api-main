@@ -21,7 +21,7 @@ def all_categories(search, status, page, limit, db):
     elif status is False:
         categories_query = categories_query.filter(Categories.status == False)
     else:
-        categories = categories_query
+        categories_query = categories_query
     categories_query = categories_query.order_by(Categories.id.desc())
 
     return pagination(categories_query, page, limit)

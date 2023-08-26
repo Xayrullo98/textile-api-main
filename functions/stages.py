@@ -10,7 +10,7 @@ from models.stages import Stages
 
 
 def all_stages(measure_id, category_id, search, page, limit, db):
-    stages_query = db.query(Stages).options(joinedload(Stages.cate),
+    stages_query = db.query(Stages).options(joinedload(Stages.category),
                                             joinedload(Stages.measure),
                                             joinedload(Stages.stage_user))
     if measure_id:

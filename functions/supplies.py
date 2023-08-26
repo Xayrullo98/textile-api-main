@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy.orm import joinedload
 
 from functions.supplier_balances import create_supplier_balance_func
@@ -44,18 +46,18 @@ def all_supplies(search, detail_id, supplier_id, currency_id, page, limit, db):
 
 
 def one_supply(id, db):
-    return db.query(Suppliers).options(
-        joinedload(Suppliers.order)).filter(Suppliers.id == id).first()
+    return db.query(Suppliers).filter(Suppliers.id == id).first()
 
 
 def create_supply(form, db, thisuser):
-    the_one_model_name(model=Supplies, name=form.name, db=db)
+
     the_one(db=db, model=Suppliers, id=form.supplier_id)
     the_one(db=db, model=Currencies, id=form.currency_id)
     new_supplier_db = Supplies(
         detail_id=form.detail_id,
         quantity=form.quantity,
         price=form.price,
+        date=datetime.datetime.utcnow(),
         supplier_id=form.supplier_id,
         currency_id=form.currency_id,
         user_id=thisuser.id, )
