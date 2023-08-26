@@ -41,7 +41,7 @@ def get_supplier_balances(search: str = None, id: int = 0, currencies_id: int = 
 
 @supplier_balances_router.put("/update")
 def supplier_balance_update(form: Supplier_balanceUpdate, db: Session = Depends(database),
-                           current_user: UserCurrent = Depends(get_current_active_user)):
+                            current_user: UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_supplier_balance(form, current_user, db)
