@@ -56,9 +56,8 @@ def create_kassa(form, db, thisuser):
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli bajarildi")
 
 
-def update_kassa(form, db, thisuser):
+def update_kassa(form, thisuser,  db):
     the_one(db, Kassas, form.id)
-    the_one(db, Currencies, form.currency_id)
     the_one_model_name(db, Kassas, form.name)
     db.query(Kassas).filter(Kassas.id == form.id).update({
         Kassas.name: form.name,

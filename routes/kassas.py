@@ -15,7 +15,7 @@ kassa_router = APIRouter(
 
 
 @kassa_router.get('/all', status_code=200)
-def get_clients(currency_id: int = 0, search: str = None,  id: int = 0,  page: int = 1,
+def get_kassas(currency_id: int = 0, search: str = None,  id: int = 0,  page: int = 1,
                 limit: int = 25, db: Session = Depends(database),
                 current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -28,6 +28,7 @@ def get_clients(currency_id: int = 0, search: str = None,  id: int = 0,  page: i
 @kassa_router.post('/create')
 def kassa_create(form: CreateKassa, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_kassa(form=form, thisuser=current_user, db=db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
@@ -36,6 +37,7 @@ def kassa_create(form: CreateKassa, db: Session = Depends(database),
 @kassa_router.put("/update")
 def kassa_update(form: UpdateKassa, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_kassa(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")

@@ -29,7 +29,7 @@ def get_files(search: str = None, id: int = 0, source: str = None, page: int = 1
 
 
 @uploaded_files_router.post("/create")
-def file_create(new_file: UploadFile = File(None), source: str = Form(None),
+def file_create(new_file: UploadFile = File(None), source: str = Form(...),
                 source_id: int = Form(0), comment: str = Form(None),
                 db: Session = Depends(database),
                 current_user: CreateUser = Depends(get_current_active_user)):
