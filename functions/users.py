@@ -18,7 +18,7 @@ def all_users(search, page, limit, status, db):
         users = users.filter(Users.id > 0)
     if status:
         users = users.filter(Users.status == True)
-    elif status is False:
+    if status is False:
         users = users.filter(Users.status == False)
     else:
         users = users

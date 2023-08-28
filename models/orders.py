@@ -22,7 +22,7 @@ class Orders(Base):
     quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)
     stage_id = Column(Integer, nullable=False)
-    order_status = Column(Boolean)
+    order_status = Column(Boolean, default=False)
 
     category = relationship("Categories", foreign_keys=[category_id],
                             primaryjoin=lambda: and_(Categories.id == Orders.category_id))

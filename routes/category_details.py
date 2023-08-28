@@ -42,6 +42,7 @@ def get_category_details(search: str = None,  id: int = 0, measure_id: int = 0,
 @category_details_router.put("/update")
 def category_detail_update(form: Category_detailsUpdate, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_category_detail(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")

@@ -15,7 +15,7 @@ suppliers_router = APIRouter(
 )
 
 @suppliers_router.post('/add', )
-def add_category_detail(form: SuppliersCreate, db: Session = Depends(database),
+def add_supplier(form: SuppliersCreate, db: Session = Depends(database),
                         current_user: UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -35,7 +35,7 @@ def get_suppliers(search: str = None,  id: int = 0,  page: int = 1,
 
 
 @suppliers_router.put("/update")
-def category_detail_update(form: SuppliersUpdate, db: Session = Depends(database),
+def supplier_update(form: SuppliersUpdate, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)

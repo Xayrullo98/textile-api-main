@@ -13,8 +13,9 @@ def all_warehouse_products(currency_id, category_detail_id, page, limit, db):
         joinedload(Warehouse_products.category_detail), joinedload(Warehouse_products.currency))
     if category_detail_id:
         warehouse_products = warehouse_products.filter(Warehouse_products.id == category_detail_id)
-    elif currency_id:
+    if currency_id:
         warehouse_products = warehouse_products.filter(Warehouse_products.id == currency_id)
+    warehouse_products = warehouse_products.order_by(Warehouse_products.id.desc())
     return pagination(warehouse_products, page, limit)
 
 
@@ -47,6 +48,7 @@ def update_warehouse_product(form, db, thisuser):
         Warehouse_products.category_detail_id: form.category_detail_id,
         Warehouse_products.quantity: form.quantity,
         Warehouse_products.price: form.price,
-        Warehouse_products.currency_id: form.currency_id
+        Warehouse_products.currency_id: form.currency_id,
+        Warehouse_products.user_id: thisuser.id
     })
     db.commit()

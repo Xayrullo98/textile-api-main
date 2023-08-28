@@ -23,21 +23,21 @@ def all_suppliers(search, page, limit, db):
 
 
 def one_supplier(ident, db):
-    the_item = db.query(Suppliers).options(
-        joinedload(Suppliers.user), joinedload(Suppliers.supplier_phones)).filter(Suppliers.id == ident).first()
+    the_item = db.query(Suppliers).options(joinedload(Suppliers.supplier_phones)).filter(Suppliers.id == ident).first()
     if the_item is None:
         raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")
     return the_item
 
 
-def create_supplier(form, db, thisuser):
+def create_supplier(form, thisuser,  db):
     new_supplier_db = Suppliers(
         name=form.name,
         address=form.address,
         comment=form.comment,
         user_id=thisuser.id,
     )
-    save_in_db(db, new_supplier_db)
+    db.add(new_supplier_db)
+    db.flush()
     for i in form.phones:
         comment = i.comment
         number = i.number
@@ -46,7 +46,8 @@ def create_supplier(form, db, thisuser):
     db.commit()
     return new_supplier_db
 
-def update_supplier(form, db, thisuser):
+
+def update_supplier(form, thisuser, db):
     the_one(db, Suppliers, form.id)
     db.query(Suppliers).filter(Suppliers.id == form.id).update({
         Suppliers.name: form.name,
@@ -54,7 +55,7 @@ def update_supplier(form, db, thisuser):
         Suppliers.comment: form.comment,
         Suppliers.user_id: thisuser.id
     })
-    db.commit()
+
     client_phones = db.query(Phones).filter(Phones.source_id == form.id).all()
     for phone in client_phones:
         delete_phone(id=phone.id, db=db)

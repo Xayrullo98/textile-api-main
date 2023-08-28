@@ -18,7 +18,7 @@ def all_categories(search, status, page, limit, db):
 
     if status:
         categories_query = categories_query.filter(Categories.status == True)
-    elif status is False:
+    if status is False:
         categories_query = categories_query.filter(Categories.status == False)
     else:
         categories_query = categories_query
@@ -32,7 +32,7 @@ def create_category(form, db, thisuser):
     new_currencie_db = Categories(
         name=form.name,
         comment=form.comment,
-        user_id=thisuser.id, )
+        user_id=thisuser.id)
     save_in_db(db, new_currencie_db)
     return new_currencie_db
 
@@ -44,6 +44,7 @@ def update_category(form, thisuser, db):
     db.query(Categories).filter(Categories.id == form.id).update({
         Categories.name: form.name,
         Categories.comment: form.comment,
+        Categories.status: form.status,
         Categories.user_id: thisuser.id
     })
     db.commit()

@@ -10,8 +10,6 @@ class CreateOrder(BaseModel):
     price: float = Field(..., ge=0.1)
     quantity: float = Field(..., ge=0.1)
     delivery_date: date
-    stage_id: int = Field(..., ge=0)
-    order_status: bool
 
 
 class UpdateOrder(BaseModel):

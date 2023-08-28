@@ -52,7 +52,6 @@ def create_kassa(form, db, thisuser):
         create_phone(number, 'kassa', new_kassa_db.id, comment, thisuser.id, db, commit=False)
 
     db.commit()
-
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli bajarildi")
 
 

@@ -52,13 +52,6 @@ def file_update(
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
-# @uploaded_files_router.delete("/delete_file")
-# def delete_file(id: int, db: Session = Depends(database),
-#                 current_user: CreateUser = Depends(get_current_active_user)):
-#     role_verification(user=current_user)
-#     delete_file_e(id, db)
-#     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
-
 
 
 

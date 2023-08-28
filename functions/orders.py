@@ -10,6 +10,7 @@ from models.clients import Clients
 from models.currencies import Currencies
 from models.orders import Orders
 from models.stages import Stages
+from models.warehouse_products import Warehouse_products
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -20,15 +21,15 @@ def all_orders(client_id, category_id, currency_id, stage_id, from_date, to_date
         joinedload(Orders.category))
     if client_id:
         orders = orders.filter(Orders.client_id == client_id)
-    elif from_date and to_date:
+    if from_date and to_date:
         orders = orders.filter(and_(Orders.date >= from_date, Orders.date <= to_date))
-    elif category_id:
+    if category_id:
         orders = orders.filter(Orders.category_id == category_id)
-    elif currency_id:
+    if currency_id:
         orders = orders.filter(Orders.currency_id == currency_id)
-    elif stage_id:
+    if stage_id:
         orders = orders.filter(Orders.stage_id == stage_id)
-
+    orders = orders.order_by(Orders.id.desc())
     return pagination(orders, page, limit)
 
 
@@ -54,18 +55,23 @@ def create_order(form, db, thisuser):
         price=form.price,
         currency_id=form.currency_id,
         delivery_date=form.delivery_date,
-        stage_id=form.stage_id,
-        order_status=form.order_status,
+        stage_id=0,
+        order_status=False,
         user_id=thisuser.id,
     )
     save_in_db(db, new_order_db)
     #order history will be added after order, kpi_money should be calculated
-    kpi_money = 0,
+    kpi_money = 0
     create_order_history(new_order_db.id, form.stage_id, kpi_money, thisuser, db)
+    #agar kiritilayotgan quantitydagi mahsulot
+    #omborda bo'lsa, ombordan ayriladi va income bo'ladi
+    # warehouse_product = db.query(Warehouse_products).filter(Warehouse_products.category_detail)
 
 
 def update_order(form, db, thisuser):
-    the_one(db, Orders, form.id)
+    order = the_one(db, Orders, form.id)
+    if order.stutus == True:
+        raise HTTPException(status_code=400, detail="Bu order allaqachon tugatilgan")
     the_one(db, Clients, form.client_id)
     the_one(db, Categories, form.category_id)
     the_one(db, Currencies, form.currency_id)

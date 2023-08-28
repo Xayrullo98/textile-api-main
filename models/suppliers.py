@@ -1,7 +1,9 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, and_
+
+from models.users import Users
 
 
 class Suppliers(Base):
@@ -12,5 +14,6 @@ class Suppliers(Base):
     comment = Column(String(255), nullable=False)
     user_id = Column(Integer, nullable=False)
 
-
+    user = relationship("Users", foreign_keys=[user_id],
+                        primaryjoin=lambda: and_(Users.id == Suppliers.user_id))
     supply = relationship("Supplies", back_populates='supplier')
