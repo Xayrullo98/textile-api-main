@@ -52,3 +52,8 @@ def update_warehouse_product(form, db, thisuser):
         Warehouse_products.user_id: thisuser.id
     })
     db.commit()
+
+
+def get_warehouse_product(category_detail_id, db):
+    the_one(db, Warehouse_products, category_detail_id)
+    return db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).all()

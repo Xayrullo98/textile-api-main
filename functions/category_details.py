@@ -67,3 +67,9 @@ def update_category_detail(form, db, thisuser):
         Category_details.user_id: thisuser.id
     })
     db.commit()
+
+def one_category_detail_via_category(category_id, db):
+    the_item = db.query(Category_details).filter(Category_details.category_id == category_id).all()
+    if the_item is None:
+        raise HTTPException(status_code=400, detail="Bu malumot bazada mavjud")
+    return the_item
