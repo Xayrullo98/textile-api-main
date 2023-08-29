@@ -105,7 +105,7 @@ def update_supply(form, thisuser, db):
         Supplies.user_id: thisuser.id
     })
     db.commit()
-
+    #check warehouse products
     db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == form.detail_id).update({
         Warehouse_products.price: form.price,
         Warehouse_products.quantity: form.quantity,
