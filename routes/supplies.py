@@ -7,7 +7,7 @@ from functions.supplies import create_supply, update_supply, all_supplies, delet
 
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
-from schemes.supplies import SuppliesCreate, SuppliesUpdate, SuppliesConfirm
+from schemes.supplies import SuppliesCreate, SuppliesUpdate, SuppliesConfirm, SuppliesUpdateConfirm
 from db import database
 
 from schemes.users import UserCurrent
@@ -51,12 +51,13 @@ def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
 
 
 @supplies_router.post("/confirm")
-def confirm_supply(ids = SuppliesConfirm, db: Session = Depends(database),
+def confirm_supply(form:SuppliesUpdateConfirm, db: Session = Depends(database),
                   current_user:  UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
-    for id in ids:
-        supply_confirm(id, current_user, db)
+    for data in form.ids:
+
+        supply_confirm(data.id, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 @supplies_router.delete("/delete")

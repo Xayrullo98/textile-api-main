@@ -113,9 +113,13 @@ def update_supply(form, thisuser, db):
 
 def supply_confirm(id, thisuser,  db):
     supply = the_one(db, Supplies, id)
-    if thisuser.role != 'warehouseman':
-        raise HTTPException(status_code=400, detail="Faqat omborchi taminotni qabul qilishi mumkin")
-    create_warehouse_product(category_detail_id=supply.category_detail_id, quantity=form.quantity,
+    print(supply.category_detail_id,'ssssssssssssssssssssssssssssssssssssssssssss')
+    print(supply.price,'ssssssssssssssssssssssssssssssssssssssssssss')
+    print(supply.quantity,'ssssssssssssssssssssssssssssssssssssssssssss')
+    print(supply.currency_id,'ssssssssssssssssssssssssssssssssssssssssssss')
+    # if thisuser.role != 'warehouseman':
+    #     raise HTTPException(status_code=400, detail="Faqat omborchi taminotni qabul qilishi mumkin")
+    create_warehouse_product(category_detail_id=supply.category_detail_id, quantity=supply.quantity,
                              price=supply.price, currency_id=supply.currency_id, db=db, thisuser=thisuser)
 
     create_supplier_balance_func(balance=supply.quantity * supply.price, currencies_id=supply.currency_id,
@@ -126,7 +130,9 @@ def supply_confirm(id, thisuser,  db):
             Supplies.received_user_id: thisuser.id
         })
         db.commit()
-    raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
+        return {"data":"Tasdiqlandi"}
+    else:
+        raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
 
 
 #agar supplyni stutusi true bo'lsa uni o'chira olmaydi

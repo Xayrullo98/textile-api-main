@@ -19,3 +19,9 @@ class SuppliesUpdate(BaseModel):
     currency_id: int
 
 
+class SuppliesConfirm(BaseModel):
+    id: int
+
+
+class SuppliesUpdateConfirm(BaseModel):
+    ids: List[SuppliesConfirm]
