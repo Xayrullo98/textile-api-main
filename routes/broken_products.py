@@ -13,7 +13,7 @@ broken_products_router = APIRouter(
 )
 
 
-@broken_products_router.get('/all', status_code=200)
+@broken_products_router.get('/all')
 def get_broken_products(id: int = 0, category_id: int = 0,  page: int = 1,
                         limit: int = 25, db: Session = Depends(database),
                         current_user: UserCurrent = Depends(get_current_active_user)
