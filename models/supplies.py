@@ -16,7 +16,7 @@ class Supplies(Base):
     price = Column(Numeric, nullable=False)
     supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=True)
-    status = Column(Boolean, nullable=True, default=True)
+    status = Column(Boolean, nullable=True, default=False)
     received_user_id = Column(Integer, nullable=True)
 
     user = relationship("Users", foreign_keys=[user_id],

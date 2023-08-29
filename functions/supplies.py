@@ -17,7 +17,7 @@ from utils.pagination import pagination
 from models.supplies import Supplies
 
 
-def all_supplies(search, category_detail_id, supplier_id, currency_id, page, limit, db):
+def all_supplies(search, category_detail_id, supplier_id, currency_id, status, page, limit, db):
     supplies = db.query(Supplies).options(
         joinedload(Supplies.currency),
         joinedload(Supplies.category_detail),
@@ -33,6 +33,11 @@ def all_supplies(search, category_detail_id, supplier_id, currency_id, page, lim
     else:
         supplies = supplies.filter(Supplies.id > 0)
 
+    #status bo'yicha filterlash
+    if status:
+        supplies = supplies.filter(Supplies.status == True)
+    if status==False:
+        supplies = supplies.filter(Supplies.status == False)
     if category_detail_id:
         supplies = supplies.filter(Supplies.category_detail_id == category_detail_id)
     if supplier_id:
@@ -75,12 +80,15 @@ def create_supply(form, thisuser, db):
                                  supplies_id=new_supplier_db.id, db=db, thisuser=thisuser)
 
 
+#agar supplyni stutusi true bo'lsa uni update qila olmaydi
 def update_supply(form, thisuser, db):
     the_one(db=db, model=Suppliers, id=form.supplier_id)
     the_one(db=db, model=Currencies, id=form.currency_id)
     the_one(db, Category_details, form.category_detail_id)
-    the_one(db, Supplies, form.id)
+    supply = the_one(db, Supplies, form.id)
     the_one(db, Users, form.received_user_id)
+    if supply.status:
+        raise HTTPException(status_code=400, detail="Bu supplayni statusi true o'zgartirib bo'lmaydi")
 
     db.query(Supplies).filter(Supplies.id == form.id).update({
         Supplies.detail_id: form.detail_id,
@@ -89,8 +97,6 @@ def update_supply(form, thisuser, db):
         Supplies.date: datetime.now(),
         Supplies.supplier_id: form.supplier_id,
         Supplies.currency_id: form.currency_id,
-        Supplies.received_user_id: form.received_user_id,
-        Supplies.status: form.status,
         Supplies.user_id: thisuser.id
     })
     db.commit()
@@ -110,10 +116,24 @@ def update_supply(form, thisuser, db):
     db.commit()
 
 
+def supply_confirm(id, thisuser,  db):
+    supply = the_one(db, Supplies, id)
+    if thisuser.role != 'warehouseman':
+        raise HTTPException(status_code=400, detail="Faqat omborchi taminotni qabul qilishi mumkin")
+    if supply.status == False:
+        db.query(Supplies).filter(Supplies.id == id).update({
+            Supplies.status: True,
+            Supplies.received_user_id: thisuser.id
+        })
+        db.commit()
+    raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
+
+
+#agar supplyni stutusi true bo'lsa uni o'chira olmaydi
 def delete_supply(id, db, thisuser):
-    the_one(db=db, model=Supplies, id=id)
-    db.query(Supplies).filter(Supplies.id == id).update({
-        Supplies.status: False,
-        Supplies.user_id: thisuser.id
-    })
+    supply = the_one(db=db, model=Supplies, id=id)
+    if supply.status:
+        raise HTTPException(status_code=400, detail="Bu supplayni statusi true o'chira olmaysiz")
+    db.query(Supplies).filter(Supplies.id == id).delete()
     db.commit()
+
