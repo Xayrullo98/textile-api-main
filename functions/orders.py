@@ -4,7 +4,11 @@ from fastapi import HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
+from functions.category_details import one_category_detail_via_category
+from functions.incomes import add_income
+from functions.kassa import one_kassa, one_kassa_via_currency_id
 from functions.order_histories import create_order_history, update_order_history
+from functions.warehouse_products import  get_warehouse_product
 from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
@@ -46,23 +50,41 @@ def create_order(form, db, thisuser):
     the_one(db, Clients, form.client_id)
     the_one(db, Categories, form.category_id)
     the_one(db, Currencies, form.currency_id)
-    the_one(db, Stages, form.stage_id)
+    category_details = one_category_detail_via_category(category_id=form.category_id, db=db)
+
+    for category_detail in category_details:
+        warehouse_products = get_warehouse_product(category_detail_id=category_detail.id, db=db)
+        warehouse_product_quantity = sum([warehouse_product.quantity for warehouse_product in warehouse_products])
+
+        category_detail_quantity = category_detail.quantity * form.quantity
+        if category_detail_quantity > warehouse_product_quantity:
+            raise HTTPException(status_code=404,
+                                detail=f"Omborda  {category_detail.name}dan  {warehouse_product_quantity}ta qolgan ")
+
+
     new_order_db = Orders(
-        client_id=form.client_id,
-        date=date.today(),
-        quantity=form.quantity,
-        category_id=form.category_id,
-        price=form.price,
-        currency_id=form.currency_id,
-        delivery_date=form.delivery_date,
-        stage_id=0,
-        order_status=False,
-        user_id=thisuser.id,
+            client_id=form.client_id,
+            date=date.today(),
+            quantity=form.quantity,
+            category_id=form.category_id,
+            price=form.price,
+            currency_id=form.currency_id,
+            delivery_date=form.delivery_date,
+            stage_id=1,
+            order_status=False,
+            user_id=thisuser.id,
     )
     save_in_db(db, new_order_db)
+    kassa = one_kassa_via_currency_id(currency_id=form.currency_id,db=db)
+    add_income(currency_id=form.currency_id,money=form.price*form.quantity,source='order',source_id=new_order_db.id,kassa_id=kassa.id,db=db,thisuser=thisuser)
+
+
+
+
+
     #order history will be added after order, kpi_money should be calculated
     kpi_money = 0
-    create_order_history(new_order_db.id, form.stage_id, kpi_money, thisuser, db)
+    create_order_history(new_order_db.id, 1, kpi_money, thisuser, db)
     #agar kiritilayotgan quantitydagi mahsulot
     #omborda bo'lsa, ombordan ayriladi va income bo'ladi
     # warehouse_product = db.query(Warehouse_products).filter(Warehouse_products.category_detail)

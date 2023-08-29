@@ -19,7 +19,7 @@ def all_incomes(currency_id, from_date, to_date, page, limit, db):
     if currency_id:
         incomes = incomes.filter(Incomes.id == currency_id)
     elif from_date and to_date:
-        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date))
+        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date)).order_by(Incomes.id.desc())
 
     return pagination(incomes, page, limit)
 
@@ -87,4 +87,26 @@ def update_income(form, db, thisuser):
     db.commit()
 
 
+def add_income(currency_id, money, source, source_id, kassa_id, db, thisuser):
+    if source not in ['order']:
+        raise HTTPException(status_code=400, detail='source error')
+    kassa = the_one(db, Kassas, kassa_id)
+    if kassa.currency_id != currency_id:
+        raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
 
+    the_one(db, Orders, source_id)
+    the_one(db, Currencies, currency_id)
+    new_income_db = Incomes(
+        currency_id=currency_id,
+        date=date.today(),
+        money=money,
+        source=source,
+        source_id=source_id,
+        kassa_id=kassa_id,
+        user_id=thisuser.id,
+    )
+    save_in_db(db, new_income_db)
+    db.query(Kassas).filter(Kassas.id == kassa_id).update({
+        Kassas.balance: Kassas.balance + money
+    })
+    db.commit()

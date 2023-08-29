@@ -78,3 +78,11 @@ def update_kassa(form, thisuser,  db):
     raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 
 
+def one_kassa_via_currency_id(currency_id, db):
+    the_item = db.query(Kassas).options(
+        joinedload(Kassas.user), joinedload(Kassas.currency),
+        joinedload(Kassas.kassa_phones)
+    ).filter(Kassas.currency_id == currency_id).first()
+    if the_item is None:
+        raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")
+    return the_item
