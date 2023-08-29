@@ -20,3 +20,6 @@ from models.orders import Orders
 from models.order_histories import Order_histories
 from models.warehouse_products import Warehouse_products
 from models.uploaded_files import Uploaded_files
+from models.order_done_products import Order_done_products
+from models.order_for_masters import Order_for_masters
+from models.broken_products_histories import Broken_product_histories
