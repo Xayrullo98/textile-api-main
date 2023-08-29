@@ -1,11 +1,13 @@
 import inspect
+from typing import List
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from functions.supplies import create_supply, update_supply, all_supplies, delete_supply, one_supply, supply_confirm
 
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
-from schemes.supplies import SuppliesCreate,SuppliesUpdate
+from schemes.supplies import SuppliesCreate, SuppliesUpdate, SuppliesConfirm
 from db import database
 
 from schemes.users import UserCurrent
@@ -26,7 +28,7 @@ def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_us
 @supplies_router.get('/', status_code=200)
 def get_supplies(search: str = None,  id: int = 0,
                  category_detail_id: int = 0, supplier_id: int = 0,
-                 currency_id=0, status: bool = None, page: int = 1,
+                 currency_id:int=0, status: bool = None, page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -48,11 +50,12 @@ def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
 
 
 @supplies_router.post("/confirm")
-def confirm_supply(id: int, db: Session = Depends(database),
+def confirm_supply(ids = SuppliesConfirm, db: Session = Depends(database),
                   current_user:  UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
-    supply_confirm(id, current_user, db)
+    for id in ids:
+        supply_confirm(id, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 @supplies_router.delete("/delete")

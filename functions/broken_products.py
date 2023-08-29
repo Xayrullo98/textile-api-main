@@ -26,7 +26,7 @@ def one_broken(ident, db):
 
 
 def create_broken_product(form, db, thisuser):
-    the_one(db, Categories, form.category_id, thisuser)
+    the_one(db, Categories, form.category_id, )
     new_broken_db = Broken_products(
         category_id=form.category_id,
         quantity=form.quantity,
@@ -37,8 +37,8 @@ def create_broken_product(form, db, thisuser):
 
 
 def update_broken(form, db, thisuser):
-    the_one(db, Categories, form.category_id, thisuser)
-    the_one(db, Broken_products, form.id, thisuser)
+    the_one(db, Categories, form.category_id, )
+    the_one(db, Broken_products, form.id, )
     db.query(Broken_products).filter(Broken_products.id == form.id).update({
         Broken_products.category_id: form.category_id,
         Broken_products.quantity: form.quantity,
