@@ -26,7 +26,7 @@ def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_us
 @supplies_router.get('/', status_code=200)
 def get_supplies(search: str = None,  id: int = 0,
                  category_detail_id: int = 0, supplier_id: int = 0,
-                 currency_id=0, status: bool = None, page: int = 1,
+                 currency_id:int=0, status: bool = None, page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)

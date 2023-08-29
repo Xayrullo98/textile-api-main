@@ -18,13 +18,10 @@ from models.supplies import Supplies
 
 
 def all_supplies(search, category_detail_id, supplier_id, currency_id, status, page, limit, db):
-    supplies = db.query(Supplies).options(
-        joinedload(Supplies.currency),
-        joinedload(Supplies.category_detail),
-        joinedload(Supplies.supplier),
-        joinedload(Supplies.received_user),
-        joinedload(Supplies.user)
-    )
+    supplies = db.query(Supplies).options(joinedload(Supplies.currency), joinedload(Supplies.category_detail),
+                                          joinedload(Supplies.supplier), joinedload(Supplies.received_user),
+                                          joinedload(Supplies.user))
+
 
     if search:
         search_formatted = f"%{search}%"
@@ -36,14 +33,22 @@ def all_supplies(search, category_detail_id, supplier_id, currency_id, status, p
     #status bo'yicha filterlash
     if status:
         supplies = supplies.filter(Supplies.status == True)
-    if status==False:
+    elif status==False:
         supplies = supplies.filter(Supplies.status == False)
+    else:
+        supplies = supplies
     if category_detail_id:
         supplies = supplies.filter(Supplies.category_detail_id == category_detail_id)
+    else:
+        supplies = supplies
     if supplier_id:
         supplies = supplies.filter(Supplies.supplier_id == supplier_id)
+    else:
+        supplies = supplies
     if currency_id:
         supplies = supplies.filter(Supplies.currency_id == currency_id)
+    else:
+        supplies = supplies
 
     supplies = supplies.order_by(Supplies.id.desc())
     return pagination(supplies, page, limit)
@@ -86,7 +91,7 @@ def update_supply(form, thisuser, db):
     the_one(db=db, model=Currencies, id=form.currency_id)
     the_one(db, Category_details, form.category_detail_id)
     supply = the_one(db, Supplies, form.id)
-    the_one(db, Users, form.received_user_id)
+
     if supply.status:
         raise HTTPException(status_code=400, detail="Bu supplayni statusi true o'zgartirib bo'lmaydi")
 
@@ -100,6 +105,7 @@ def update_supply(form, thisuser, db):
         Supplies.user_id: thisuser.id
     })
     db.commit()
+
     db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == form.detail_id).update({
         Warehouse_products.price: form.price,
         Warehouse_products.quantity: form.quantity,
