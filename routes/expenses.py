@@ -1,3 +1,4 @@
+import datetime
 import inspect
 from datetime import date
 
@@ -19,7 +20,7 @@ expenses_router = APIRouter(
 
 @expenses_router.get('/all')
 def get_expenses(id: int = 0, currency_id: int = 0,
-                 from_date: date = Query(None), to_date: date = Query(None), page: int = 1,
+                 from_date: date = Query("2023-08-28"), to_date: date = Query(datetime.date.today()), page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)

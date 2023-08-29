@@ -17,7 +17,7 @@ from utils.pagination import pagination
 from models.supplies import Supplies
 
 
-def all_supplies(search, category_detail_id, supplier_id, currency_id, page, limit, db):
+def all_supplies(search, category_detail_id, supplier_id, currency_id, status, page, limit, db):
     supplies = db.query(Supplies).options(
         joinedload(Supplies.currency),
         joinedload(Supplies.category_detail),
@@ -33,6 +33,11 @@ def all_supplies(search, category_detail_id, supplier_id, currency_id, page, lim
     else:
         supplies = supplies.filter(Supplies.id > 0)
 
+    #status bo'yicha filterlash
+    if status:
+        supplies = supplies.filter(Supplies.status == True)
+    if status==False:
+        supplies = supplies.filter(Supplies.status == False)
     if category_detail_id:
         supplies = supplies.filter(Supplies.category_detail_id == category_detail_id)
     if supplier_id:

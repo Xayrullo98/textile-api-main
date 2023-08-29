@@ -1,5 +1,5 @@
 import inspect
-from datetime import date
+from datetime import date, datetime
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
@@ -15,6 +15,7 @@ order_for_masters_router = APIRouter(
     tags=["Order for masters operation"]
 )
 
+
 @order_for_masters_router.post('/add', )
 def add_stage_user(form: CreateOrder_for_masters, db: Session = Depends(database),
                    current_user: UserCurrent = Depends(get_current_active_user)):
@@ -26,7 +27,7 @@ def add_stage_user(form: CreateOrder_for_masters, db: Session = Depends(database
 
 @order_for_masters_router.get('/', status_code=200)
 def get_order_for_masters(stage_id: int = 0, order_id: int = 0,  id: int = 0, page: int = 1,
-                    from_date: date = Query(None), to_date: date = Query(None),
+                    from_date: date = Query('2023-08-29'), to_date: date = Query(datetime.today()),
                     limit: int = 25, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)

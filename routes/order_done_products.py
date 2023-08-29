@@ -1,3 +1,4 @@
+import datetime
 import inspect
 from datetime import date
 
@@ -26,7 +27,7 @@ def add_stage_user(form: CreateOrder_done_products, db: Session = Depends(databa
 
 @order_done_products_router.get('/', status_code=200)
 def get_order_done_products(stage_id: int = 0, order_id: int = 0,  id: int = 0, page: int = 1,
-                    from_date: date = Query(None), to_date: date = Query(None),
+                    from_date: date = Query('2023-08-29'), to_date: date = Query(datetime.date.today()),
                     limit: int = 25, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
