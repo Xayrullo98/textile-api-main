@@ -35,6 +35,7 @@ def create_phone(number, source, source_id, comment, user_id, db, commit=True):
 def update_phone(phone_id, number, source, source_id, comment, user_id, db,  commit=True):
     if db.query(Phones).filter(Phones.number == number, Phones.source == source).first():
         raise HTTPException(status_code=400, detail="Bu nomer bazada mavjud")
+
     db.query(Phones).filter(Phones.id == phone_id).update({
         Phones.number: number,
         Phones.comment: comment,

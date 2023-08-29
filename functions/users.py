@@ -62,6 +62,7 @@ def update_user(form, thisuser, db):
         raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:
         raise HTTPException(status_code=400, detail="Bu username bazada mavjud")
+
     db.query(Users).filter(Users.id == form.id).update({
         Users.name: form.name,
         Users.username: form.username,

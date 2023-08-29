@@ -47,6 +47,14 @@ def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
+@supplies_router.post("/confirm")
+def confirm_supply(id: int, db: Session = Depends(database),
+                  current_user:  UserCurrent = Depends(get_current_active_user)):
+
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
+    supply_confirm(id, current_user, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+
 @supplies_router.delete("/delete")
 def supply_delete(id: int, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):

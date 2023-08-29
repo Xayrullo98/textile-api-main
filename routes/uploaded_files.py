@@ -29,29 +29,41 @@ def get_files(search: str = None, id: int = 0, source: str = None, page: int = 1
 
 
 @uploaded_files_router.post("/create")
-def file_create(new_file: UploadFile = File(None), source: str = Form(...),
-                source_id: int = Form(0), comment: str = Form(None),
-                db: Session = Depends(database),
-                current_user: CreateUser = Depends(get_current_active_user)):
+def upload_files(
+        new_files: List[UploadFile] = File(...),
+        source: str = Form(...),
+        source_id: int = Form(...),
+        comment: str = Form(None),
+        db: Session = Depends(database),
+        current_user: CreateUser = Depends(get_current_active_user)
+        ):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
-    create_file(new_file, source, source_id, comment, current_user, db)
-    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    create_file(new_files, source, source_id, comment, current_user, db)
+    return {"message": f"{len(new_files)} fayl bazaga saqlandi"}
 
 
 @uploaded_files_router.put("/update")
 def file_update(
-        id: int = Form(0),
-        new_file: UploadFile = File(None), source: str = Form(None),
-        source_id: int = Form(0), comment: str = Form(None),
+        new_files: List[UploadFile] = File(...),
+        source: str = Form(...),
+        source_id: int = Form(...),
+        comment: str = Form(None),
         db: Session = Depends(database),
-        current_user: CreateUser = Depends(get_current_active_user)):
-
+        current_user: CreateUser = Depends(get_current_active_user)
+):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
-    update_file(id, new_file, source, source_id, comment, current_user, db)
-    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
+    update_file(new_files, source, source_id, comment, current_user, db)
+    return {"message": f"{len(new_files)} fayl yangilandi"}
 
 
-
+# @uploaded_files_router.delete("/delete", description="source_id bo'yicha barcha medialarni o'chirish")
+# def delete_files(source_id: int = Form(...), db: Session = Depends(database),
+#                  current_user: CreateUser = Depends(get_current_active_user)):
+#
+#     role_verification(current_user, inspect.currentframe().f_code.co_name)
+#     delete_source_files(source_id, db)
+#     raise HTTPException(status_code=200, detail='Amaliyot muvaffaqiyatli yakunlandi')
+#
 
 

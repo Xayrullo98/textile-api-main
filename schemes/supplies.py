@@ -17,6 +17,5 @@ class SuppliesUpdate(BaseModel):
     price: float = Field(..., ge=0.1)
     supplier_id: int
     currency_id: int
-    received_user_id: int
-    status: bool
+
 
