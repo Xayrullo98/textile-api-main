@@ -10,12 +10,10 @@ from models.clients import Clients
 
 
 def all_clients(search, page, limit, db):
-    clients = db.query(Clients).options(joinedload(Clients.user).load_only(Users.name), joinedload(Clients.client_phones))
+    clients = db.query(Clients).options(joinedload(Clients.user), joinedload(Clients.client_phones))
     if search:
         search_formatted = f"%{search}%"
-        clients = clients.filter(Clients.name.like(search_formatted))
-    else:
-        clients = clients.filter(Clients.id > 0)
+        clients = clients.filter(Clients.name.like(search_formatted)) | Clients.client_phones.like(search_formatted)
 
     clients = clients.order_by(Clients.id.desc())
 

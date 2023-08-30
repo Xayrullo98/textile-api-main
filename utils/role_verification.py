@@ -2,6 +2,8 @@ from fastapi import HTTPException
 
 
 def role_verification(user, function):
+    # if user.role not in ["admin", "stage_admin", "stage_user", "warehouseman"]:
+    #     return True
     allowed_functions_for_stage_admins = []
     allowed_functions_for_stage_users = []
     allowed_functions_for_warehouseman = []

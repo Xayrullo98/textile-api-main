@@ -19,3 +19,5 @@ class SuppliesUpdate(BaseModel):
     currency_id: int
 
 
+class SuppliesConfirm(BaseModel):
+    id: int

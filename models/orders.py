@@ -17,7 +17,7 @@ class Orders(Base):
     category_id = Column(Integer, nullable=False)
     currency_id = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
-    date = Column(Date, nullable=False)
+    date = Column(DateTime, nullable=False)
     price = Column(Numeric)
     quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)

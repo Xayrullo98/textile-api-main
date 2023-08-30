@@ -9,25 +9,24 @@ from utils.pagination import pagination
 from models.users import Users
 
 
-def all_users(search, page, limit, status, db):
+def all_users(search, role, page, limit, status, db):
     users = db.query(Users).options(joinedload(Users.user_phones))
     if search:
         search_formatted = "%{}%".format(search)
         users = users.filter(Users.name.like(search_formatted) | Users.username.like(search_formatted))
-    else:
-        users = users.filter(Users.id > 0)
-    if status:
-        users = users.filter(Users.status == True)
-    if status is False:
-        users = users.filter(Users.status == False)
-    else:
-        users = users
+
+    if status in [True, False]:
+        users = users.filter(Users.status == status)
+    if role:
+        users = users.filter(Users.role == role)
     users = users.order_by(Users.id.desc())
     return pagination(users, page, limit)
 
 
 def create_user(form, db, thisuser):
     the_one_username(db=db, model=Users, username=form.username)
+    if thisuser.role not in ['admin', 'stage_admin']:
+        raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
     if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
         raise HTTPException(status_code=400, detail="Role error")
     new_user_db = Users(
@@ -35,6 +34,7 @@ def create_user(form, db, thisuser):
         username=form.username,
         salary=form.salary,
         balance=form.balance,
+        status=True,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
 
@@ -59,6 +59,8 @@ def one_user(db, id):
 
 def update_user(form, thisuser, db):
     user = the_one(db=db, model=Users, id=form.id)
+    if thisuser.role not in ['admin', 'stage_admin']:
+        raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
     if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
         raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:

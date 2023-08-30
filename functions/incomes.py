@@ -112,12 +112,12 @@ def add_income(currency_id, money, source, source_id, kassa_id, db, thisuser):
     db.commit()
 
 
-# def calculate_sum_of_money(kassa_id: int, from_date, to_date, db):
-#     total_sum = db.query(func.sum(Incomes.money)).filter(
-#         and_(
-#             Incomes.kassa_id == kassa_id,
-#             Incomes.date >= from_date,
-#             Incomes.date <= to_date
-#         )
-#     ).scalar()
-#     return total_sum
+def calculate_sum_of_money(kassa_id: int, from_date, to_date, db):
+    total_sum = db.query(func.sum(Incomes.money)).filter(
+        and_(
+            Incomes.kassa_id == kassa_id,
+            Incomes.date >= from_date,
+            Incomes.date <= to_date
+        )
+    ).scalar()
+    return total_sum

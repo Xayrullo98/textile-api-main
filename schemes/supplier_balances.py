@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class Supplier_balanceBase(BaseModel):
-    balance : int    
+    balance: int
     currencies_id:int
     supplies_id:int
 

@@ -26,6 +26,7 @@ app.add_middleware(
 def home():
     return {"message": "Welcome"}
 
+
 app.include_router(login.login_router)
 app.include_router(users.users_router)
 app.include_router(currencies.currencies_router)
@@ -38,7 +39,7 @@ app.include_router(stage_users.stage_users_router)
 app.include_router(category_details.category_details_router)
 
 app.include_router(clients.client_router)
-app.include_router(supplier_balances.supplier_balances_router)
+# app.include_router(supplier_balances.supplier_balances_router)
 app.include_router(suppliers.suppliers_router)
 app.include_router(supplies.supplies_router)
 app.include_router(warehouse_products.warehouse_products_router)
@@ -61,6 +62,5 @@ app.include_router(broken_products.broken_products_router)
 @repeat_every(seconds=86400, wait_first=True)
 async def check():
     timee = datetime.datetime.now().strftime("%d") == "03"
-
     if timee:
         await add_salary_to_workers()

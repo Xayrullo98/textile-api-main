@@ -8,7 +8,7 @@ from utils.pagination import pagination
 from models.stage_users import Stage_users
 
 
-def all_stage_user(stage_id, search, page, limit, db):
+def all_stage_user(stage_id, connected_user_id, search, page, limit, db):
     stage_users_query = db.query(Stage_users).options(
         joinedload(Stage_users.stage), joinedload(Stage_users.connected_user))
 
@@ -16,8 +16,8 @@ def all_stage_user(stage_id, search, page, limit, db):
         search_formatted = f"%{search}%"
         search_filter = Stage_users.name.ilike(search_formatted)
         stage_users_query = stage_users_query.filter(search_filter)
-    else:
-        stage_users_query = stage_users_query.filter(Stage_users.id > 0)
+    if connected_user_id:
+        stage_users_query = stage_users_query.filter(Stage_users.connected_user_id == connected_user_id)
 
     if stage_id:
         stage_users_query = stage_users_query.filter(Stage_users.stage_id == stage_id)
@@ -35,18 +35,19 @@ def one_stage_user(id, db):
     return the_item
 
 
-def create_stage_user(form, db, thisuser):
-    the_one(db=db, model=Stages, id=form.stage_id)
+def create_stage_user(stage_id, connected_user_id, thisuser, db):
+    the_one(db, Stages, stage_id)
+    the_one(db, Users, connected_user_id)
     existing_stage_user = db.query(Stage_users).filter(
-        Stage_users.stage_id == form.stage_id,
-        Stage_users.connected_user_id == form.connected_user_id
+        Stage_users.stage_id == stage_id,
+        Stage_users.connected_user_id == connected_user_id
     ).first()
     if existing_stage_user:
         raise HTTPException(status_code=400, detail="Bu stage_id uchun bu connected_user_id bog'langan")
 
     new_stage_user_db = Stage_users(
-        stage_id=form.stage_id,
-        connected_user_id=form.connected_user_id,
+        stage_id=stage_id,
+        connected_user_id=connected_user_id,
         user_id=thisuser.id, )
     save_in_db(db, new_stage_user_db)
 
@@ -54,17 +55,20 @@ def create_stage_user(form, db, thisuser):
 def update_stage_user(form, thisuser, db):
     the_one(db, Stage_users, form.id)
     the_one(db, Stages, form.stage_id)
-    the_one(db, Users, form.connected_user_id)
-    existing_stage_user = db.query(Stage_users).filter(
-        Stage_users.stage_id == form.stage_id,
-        Stage_users.connected_user_id == form.connected_user_id
-    ).first()
-    if existing_stage_user:
-        raise HTTPException(status_code=400, detail="Bu stage_id uchun bu connected_user_id bog'langan")
+    # existing_stage_user = db.query(Stage_users).filter(
+    #     Stage_users.stage_id == form.stage_id,
+    # ).first()
+    # if existing_stage_user:
+    #     raise HTTPException(status_code=400, detail="Bu stage_id uchun bu connected_user_id bog'langan")
 
     db.query(Stage_users).filter(Stage_users.id == form.id).update({
         Stage_users.stage_id: form.stage_id,
-        Stage_users.connected_user_id: form.connected_user_id,
+        # Stage_users.connected_user_id: form.connected_user_id,
         Stage_users.user_id: thisuser.id
     })
     db.commit()
+
+
+# def delete_stage_user(id, db):
+#     the_one(db, Stage_users, id)
+#     db.query(Stage_users).filter(Stage_users.id == id).delete()

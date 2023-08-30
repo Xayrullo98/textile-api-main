@@ -10,11 +10,8 @@ from utils.db_operations import the_one, the_one_model_name, save_in_db
 from utils.pagination import pagination
 
 
-def all_kassas(currency_id, search, from_date, to_date, page, limit, db):
+def all_kassas(currency_id, search,page, limit, db):
     kassas = db.query(Kassas).options(joinedload(Kassas.user), joinedload(Kassas.currency))
-
-    if from_date and to_date:
-        kassas = kassas.filter(and_(Kassas.date >= from_date, Kassas.date <= to_date))
 
     if search:
         search_formatted = f"%{search}%"
@@ -59,7 +56,6 @@ def update_kassa(form, thisuser,  db):
         Kassas.user_id: thisuser.id,
     })
     db.commit()
-
 
 
 def one_kassa_via_currency_id(currency_id, db):

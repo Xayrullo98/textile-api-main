@@ -1,7 +1,6 @@
 import inspect
-from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from sqlalchemy.orm import Session
 from functions.supplies import create_supply, update_supply, all_supplies, delete_supply, one_supply, supply_confirm
 
@@ -9,6 +8,7 @@ from routes.login import get_current_active_user
 from utils.role_verification import role_verification
 from schemes.supplies import SuppliesCreate, SuppliesUpdate, SuppliesConfirm
 from db import database
+from typing import List
 
 from schemes.users import UserCurrent
 supplies_router = APIRouter(
@@ -18,7 +18,7 @@ supplies_router = APIRouter(
 
 
 @supplies_router.post('/add')
-def add_supplie(form: SuppliesCreate, db: Session = Depends(database),current_user:
+def add_supply(form: SuppliesCreate, db: Session = Depends(database),current_user:
                 UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     create_supply(form=form, thisuser=current_user, db=db)
@@ -51,8 +51,8 @@ def supply_update(form: SuppliesUpdate, db: Session = Depends(database),
 
 
 @supplies_router.post("/confirm")
-def confirm_supply(ids = SuppliesConfirm, db: Session = Depends(database),
-                  current_user:  UserCurrent = Depends(get_current_active_user)):
+def confirm_supply(ids: List[SuppliesConfirm], db: Session = Depends(database),
+                   current_user:  UserCurrent = Depends(get_current_active_user)):
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     for id in ids:
@@ -63,6 +63,7 @@ def confirm_supply(ids = SuppliesConfirm, db: Session = Depends(database),
 @supplies_router.delete("/delete")
 def supply_delete(id: int, db: Session = Depends(database),
                   current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     delete_supply(id, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")

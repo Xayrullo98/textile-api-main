@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from fastapi import HTTPException
 from sqlalchemy import and_
@@ -64,7 +64,7 @@ def create_order(form, db, thisuser):
 
     new_order_db = Orders(
             client_id=form.client_id,
-            date=date.today(),
+            date=datetime.now(),
             quantity=form.quantity,
             category_id=form.category_id,
             price=form.price,

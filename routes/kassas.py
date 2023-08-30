@@ -18,8 +18,7 @@ kassa_router = APIRouter(
 
 
 @kassa_router.get('/all', status_code=200)
-def get_kassas(currency_id: int = 0, search: str = None, from_date: date = Query("2023-08-28"),
-               to_date: date = Query(datetime.date.today()), id: int = 0,  page: int = 1,
+def get_kassas(currency_id: int = 0, search: str = None, id: int = 0,  page: int = 1,
                limit: int = 25, db: Session = Depends(database),
                current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -27,7 +26,7 @@ def get_kassas(currency_id: int = 0, search: str = None, from_date: date = Query
         return one_kassa(id, db)
     else:
         return all_kassas(currency_id=currency_id, search=search,
-                          from_date=from_date, to_date=to_date, page=page, limit=limit, db=db)
+                          page=page, limit=limit, db=db)
 
 
 @kassa_router.post('/create')
