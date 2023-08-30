@@ -1,16 +1,20 @@
 from fastapi import HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from functions.phones import create_phone, delete_phone
 from models.currencies import Currencies
 from models.kassa import Kassas
 from models.phones import Phones
-from utils.db_operations import  the_one, the_one_model_name
+from utils.db_operations import the_one, the_one_model_name, save_in_db
 from utils.pagination import pagination
 
 
-def all_kassas(currency_id, search, page, limit, db):
-    kassas = db.query(Kassas).options(joinedload(Kassas.user), joinedload(Kassas.currency), joinedload(Kassas.kassa_phones))
+def all_kassas(currency_id, search, from_date, to_date, page, limit, db):
+    kassas = db.query(Kassas).options(joinedload(Kassas.user), joinedload(Kassas.currency))
+
+    if from_date and to_date:
+        kassas = kassas.filter(and_(Kassas.date >= from_date, Kassas.date <= to_date))
 
     if search:
         search_formatted = f"%{search}%"
@@ -43,16 +47,7 @@ def create_kassa(form, db, thisuser):
         balance=0,
         user_id=thisuser.id,
     )
-    db.add(new_kassa_db)
-    db.flush()
-    #kassa uchun phone number yaratish
-    for i in form.phones:
-        comment = i.comment
-        number = i.number
-        create_phone(number, 'kassa', new_kassa_db.id, comment, thisuser.id, db, commit=False)
-
-    db.commit()
-    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli bajarildi")
+    save_in_db(db, new_kassa_db)
 
 
 def update_kassa(form, thisuser,  db):
@@ -63,19 +58,8 @@ def update_kassa(form, thisuser,  db):
         Kassas.comment: form.comment,
         Kassas.user_id: thisuser.id,
     })
-
-    #kassani phone_numberini yangilash
-    kassa_phones = db.query(Phones).filter(Phones.source_id == form.id).all()
-    for phone in kassa_phones:
-        delete_phone(id=phone.id, db=db)
-
-    for i in form.phones:
-        comment = i.comment
-        number = i.number
-        create_phone(number=number, source='kassa', source_id=form.id, comment=comment, user_id=thisuser.id,
-                         db=db,  commit=False)
     db.commit()
-    raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
+
 
 
 def one_kassa_via_currency_id(currency_id, db):

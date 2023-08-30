@@ -1,7 +1,6 @@
 from datetime import date, datetime
 
 from fastapi import HTTPException
-from sqlalchemy import func, String
 from sqlalchemy.orm import joinedload
 
 from functions.supplier_balances import create_supplier_balance_func
@@ -10,18 +9,16 @@ from models.category_details import Category_details
 from models.currencies import Currencies
 from models.supplier_balances import Supplier_balance
 from models.suppliers import Suppliers
-from models.users import Users
 from models.warehouse_products import Warehouse_products
-from utils.db_operations import save_in_db, the_one, the_one_model_name
+from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 from models.supplies import Supplies
 
 
 def all_supplies(search, category_detail_id, supplier_id, currency_id, status, page, limit, db):
-    supplies = db.query(Supplies).options(joinedload(Supplies.currency), joinedload(Supplies.category_detail),
+    supplies = db.query(Supplies).options(joinedload(Supplies.currency), joinedload(Supplies.category_detail).subqueryload(Category_details.measure),
                                           joinedload(Supplies.supplier), joinedload(Supplies.received_user),
                                           joinedload(Supplies.user))
-
 
     if search:
         search_formatted = f"%{search}%"
@@ -135,8 +132,9 @@ def supply_confirm(id, thisuser,  db):
     raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
 
 
+
 #agar supplyni stutusi true bo'lsa uni o'chira olmaydi
-def delete_supply(id, db, thisuser):
+def delete_supply(id, db):
     supply = the_one(db=db, model=Supplies, id=id)
     if supply.status:
         raise HTTPException(status_code=400, detail="Bu supplayni statusi true o'chira olmaysiz")

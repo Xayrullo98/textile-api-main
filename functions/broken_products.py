@@ -24,22 +24,20 @@ def one_broken(ident, db):
     return the_item
 
 
-# def create_broken_product(form, db):
-#     the_one(db, Categories, form.category_id)
-#     new_broken_db = Broken_products(
-#         category_id=form.category_id,
-#         quantity=form.quantity,
-#     )
-#     save_in_db(db, new_broken_db)
-#     #quantity should be substract from cetegory_detail
-#
-#
-#
-# def update_broken(form, db):
-#     the_one(db, Categories, form.category_id)
-#     the_one(db, Broken_products, form.id)
-#     db.query(Broken_products).filter(Broken_products.id == form.id).update({
-#         Broken_products.category_id: form.category_id,
-#         Broken_products.quantity: form.quantity,
-#     })
-#     db.commit()
+def create_broken_product(category_id, quantity, db):
+    the_one(db, Categories, category_id)
+    broken_product = db.query(Broken_products).filter(Broken_products.category_id == category_id).first()
+    if broken_product:
+        new_quantity = broken_product.quantity + quantity
+        db.query(Broken_products).filter(Broken_products.category_id == category_id).update({
+            Broken_products.quantity: new_quantity
+        })
+        db.commit()
+    else:
+        new_broken_db = Broken_products(
+            category_id=category_id,
+            quantity=quantity,
+        )
+        save_in_db(db, new_broken_db)
+    #quantity should be substract from cetegory_detail
+

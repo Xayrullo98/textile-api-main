@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
+from functions.broken_products import create_broken_product
+from models.broken_products import Broken_products
 from models.broken_products_histories import Broken_product_histories
 from models.categories import Categories
 from models.orders import Orders
@@ -37,17 +39,32 @@ def create_broken_product_history(form, db):
         quantity=form.quantity,
         order_id=form.order_id
     )
+
+    create_broken_product(form.category_id, form.quantity, db)
     save_in_db(db, new_broken_history_db)
 
 
 def update_broken_product_history(form, db):
-    the_one(db, Broken_product_histories, db)
+    history = the_one(db, Broken_product_histories, form.id)
     the_one(db, Categories, form.category_id)
     the_one(db, Orders, form.order_id)
+    old_broken_product_h = db.query(Broken_products).filter(Broken_products.category_id == form.category_id).first()
+
+
     db.query(Broken_product_histories).filter(Broken_product_histories.id == form.id).update({
         Broken_product_histories.category_id: form.category_id,
         Broken_product_histories.order_id: form.order_id,
         Broken_product_histories.quantity: form.quantity
+    })
+    db.commit()
+
+    differnce = history.quantity - form.quantity
+    differnce_hp = old_broken_product_h.quantity + differnce
+
+    db.query(Broken_products).filter(Broken_products.category_id == form.category_id).update({
+        Broken_products.category_id: form.category_id,
+        Broken_product_histories: differnce_hp
+
     })
     db.commit()
 

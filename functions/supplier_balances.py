@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from models.currencies import Currencies
@@ -7,7 +8,7 @@ from utils.pagination import pagination
 from models.supplier_balances import Supplier_balance
 
 
-def all_supplier_balances(search, currencies_id, supplies_id, page, limit, db):
+def all_supplier_balances(search, currencies_id, supplies_id, from_date, to_date, page, limit, db):
     supplier_balances = db.query(Supplier_balance).options(joinedload(Supplier_balance.supply),
                                                            joinedload(Supplier_balance.currency))
 
@@ -21,7 +22,9 @@ def all_supplier_balances(search, currencies_id, supplies_id, page, limit, db):
         supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id == currencies_id)
     else:
         supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id > 0)
-
+    if from_date and to_date:
+        supplier_balances = supplier_balances.filter(and_(
+            Supplier_balance.date >= from_date, Supplier_balance.date <= to_date))
     if supplies_id:
         supplier_balances = supplier_balances.filter(Supplier_balance.supplies_id == supplies_id)
     else:
@@ -72,3 +75,15 @@ def update_supplier_balance(form, db, thisuser):
         Supplier_balance.user_id: thisuser.id
     })
     db.commit()
+
+
+def total_summa(supplier_id, from_date, to_date, db):
+    supliers = db.query(Supplies).filter(Supplies.supplier_id == supplier_id).all()
+    summa = 0
+    for supplier in supliers:
+
+        supplier_balances = db.query(Supplier_balance).filter(and_(
+                Supplier_balance.date >= from_date, Supplier_balance.date <= to_date))
+        supplier_balance = db.query(Supplier_balance).filter(Supplier_balance.supplies_id == supplier.id).first()
+        summa += supplier_balance
+    return summa

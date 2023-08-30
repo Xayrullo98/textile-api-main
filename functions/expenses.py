@@ -22,9 +22,9 @@ def all_expenses(currency_id, from_date, to_date, page, limit, db):
         joinedload(Expenses.kassa), joinedload(Expenses.user))
     if currency_id:
         expenses = expenses.filter(Expenses.id == currency_id)
-    elif from_date and to_date:
+    if from_date and to_date:
         expenses = expenses.filter(and_(Expenses.date >= from_date, Expenses.date <= to_date))
-
+    expenses = expenses.order_by(Expenses.id.desc())
     return pagination(expenses, page, limit)
 
 

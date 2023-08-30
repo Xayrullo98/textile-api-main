@@ -21,9 +21,9 @@ def all_order_for_masters(order_id, stage_id, from_date, to_date, page, limit, d
         joinedload(Order_for_masters.user))
     if order_id:
         order_for_masters = order_for_masters.filter(Order_for_masters.order_id == order_id)
-    elif stage_id:
+    if stage_id:
         order_for_masters = order_for_masters.filter(Order_for_masters.stage_id == stage_id)
-    elif from_date and to_date:
+    if from_date and to_date:
         order_for_masters = order_for_masters.filter(and_(Order_for_masters.date >= from_date, Order_for_masters.date <= to_date))
 
     order_for_masters = order_for_masters.order_by(Order_for_masters.id.desc())

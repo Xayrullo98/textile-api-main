@@ -34,6 +34,4 @@ class Phones(Base):
                                  primaryjoin=lambda: and_(Suppliers.id == Phones.source_id,
                                                           Phones.source == "suppliers"), backref=backref("supplier_phones"))
 
-    this_kassa = relationship('Kassas', foreign_keys=[source_id],
-                              primaryjoin=lambda: and_(Kassas.id == Phones.source_id, Phones.source == "kassa"),
-                              backref=backref("kassa_phones"))
+

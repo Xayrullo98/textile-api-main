@@ -17,9 +17,9 @@ def all_order_histories(order_id, stage_id, from_date, to_date, page, limit, db)
         joinedload(Order_histories.user))
     if order_id:
         order_histories = order_histories.filter(Order_histories.id == order_id)
-    elif stage_id:
+    if stage_id:
         order_histories = order_histories.filter(Order_histories.id == stage_id)
-    elif from_date and to_date:
+    if from_date and to_date:
         order_histories = order_histories.filter(and_(Order_histories.date >= from_date, Order_histories.date <= to_date))
 
     order_histories = order_histories.order_by(Order_histories.id.desc())

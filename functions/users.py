@@ -37,6 +37,7 @@ def create_user(form, db, thisuser):
         balance=form.balance,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
+
     db.add(new_user_db)
     db.flush()
     for i in form.phones:
@@ -62,16 +63,26 @@ def update_user(form, thisuser, db):
         raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:
         raise HTTPException(status_code=400, detail="Bu username bazada mavjud")
+    if form.password_hash is None:
+        db.query(Users).filter(Users.id == form.id).update({
+            Users.name: form.name,
+            Users.username: form.username,
+            Users.password_hash: user.password,
+            Users.salary: form.salary,
+            Users.status: form.status,
+            Users.role: form.role,
 
-    db.query(Users).filter(Users.id == form.id).update({
-        Users.name: form.name,
-        Users.username: form.username,
-        Users.password_hash: get_password_hash(form.password_hash),
-        Users.salary: form.salary,
-        Users.status: form.status,
-        Users.role: form.role,
+        })
+    else:
+        db.query(Users).filter(Users.id == form.id).update({
+            Users.name: form.name,
+            Users.username: form.username,
+            Users.password_hash: get_password_hash(form.password_hash),
+            Users.salary: form.salary,
+            Users.status: form.status,
+            Users.role: form.role,
 
-    })
+        })
 
     user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
     for phone in user_phones:
@@ -83,7 +94,6 @@ def update_user(form, thisuser, db):
         create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
                      db=db, commit=False)
     db.commit()
-    raise HTTPException(status_code=200, detail=f"Amaliyot muvaffaqiyatli bajarildi")
 
 
 def add_user_balance(user_id, money, db):

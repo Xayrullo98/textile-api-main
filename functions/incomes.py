@@ -1,7 +1,7 @@
 from datetime import date
 
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload
 
 from models.currencies import Currencies
@@ -18,9 +18,9 @@ def all_incomes(currency_id, from_date, to_date, page, limit, db):
         joinedload(Incomes.kassa), joinedload(Incomes.user))
     if currency_id:
         incomes = incomes.filter(Incomes.id == currency_id)
-    elif from_date and to_date:
-        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date)).order_by(Incomes.id.desc())
-
+    if from_date and to_date:
+        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date))
+    incomes = incomes.order_by(Incomes.id.desc())
     return pagination(incomes, page, limit)
 
 
@@ -110,3 +110,14 @@ def add_income(currency_id, money, source, source_id, kassa_id, db, thisuser):
         Kassas.balance: Kassas.balance + money
     })
     db.commit()
+
+
+# def calculate_sum_of_money(kassa_id: int, from_date, to_date, db):
+#     total_sum = db.query(func.sum(Incomes.money)).filter(
+#         and_(
+#             Incomes.kassa_id == kassa_id,
+#             Incomes.date >= from_date,
+#             Incomes.date <= to_date
+#         )
+#     ).scalar()
+#     return total_sum

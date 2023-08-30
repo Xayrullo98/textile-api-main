@@ -21,9 +21,9 @@ def all_order_done_products(order_id, stage_id, from_date, to_date, page, limit,
         joinedload(Order_done_products.user))
     if order_id:
         order_done_products = order_done_products.filter(Order_done_products.order_id == order_id)
-    elif stage_id:
+    if stage_id:
         order_done_products = order_done_products.filter(Order_done_products.stage_id == stage_id)
-    elif from_date and to_date:
+    if from_date and to_date:
         order_done_products = order_done_products.filter(and_(Order_done_products.date >= from_date, Order_done_products.date <= to_date))
 
     order_done_products = order_done_products.order_by(Order_done_products.id.desc())
