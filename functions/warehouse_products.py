@@ -31,13 +31,23 @@ def one_warehouse_p(ident, db):
 def create_warehouse_product(category_detail_id, quantity, price, currency_id, db, thisuser):
     the_one(db, Category_details, category_detail_id)
     the_one(db, Currencies, currency_id)
-    new_w_p_db = Warehouse_products(
-        category_detail_id=category_detail_id,
-        quantity=quantity,
-        price=price,
-        currency_id=currency_id,
-    )
-    save_in_db(db, new_w_p_db)
+    check = get_warehouse_product_with_price(category_detail_id=category_detail_id,db=db,price=price)
+    print(check,'dddddddddddddddddddddddddddd')
+    if check:
+        warehouse_quantity = check.quantity+quantity
+        db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).update({
+            Warehouse_products.quantity: warehouse_quantity,
+
+        })
+        db.commit()
+    else:
+        new_w_p_db = Warehouse_products(
+            category_detail_id=category_detail_id,
+            quantity=quantity,
+            price=price,
+            currency_id=currency_id,
+        )
+        save_in_db(db, new_w_p_db)
 
 
 def update_warehouse_product(form, db, thisuser):
@@ -55,5 +65,8 @@ def update_warehouse_product(form, db, thisuser):
 
 
 def get_warehouse_product(category_detail_id, db):
-    the_one(db, Warehouse_products, category_detail_id)
     return db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).all()
+
+def get_warehouse_product_with_price(category_detail_id,price, db):
+
+    return db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id,Warehouse_products.price == price).first()
