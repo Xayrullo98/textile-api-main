@@ -25,15 +25,15 @@ def all_users(search, role, page, limit, status, db):
 
 def create_user(form, db, thisuser):
     the_one_username(db=db, model=Users, username=form.username)
-    if thisuser.role not in ['admin', 'stage_admin']:
-        raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
+    # if thisuser.role not in ['admin', 'stage_admin']:
+    #     raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
     if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
         raise HTTPException(status_code=400, detail="Role error")
     new_user_db = Users(
         name=form.name,
         username=form.username,
         salary=form.salary,
-        balance=form.balance,
+        balance=0,
         status=True,
         role=form.role,
         password_hash=get_password_hash(form.password_hash))
@@ -83,7 +83,6 @@ def update_user(form, thisuser, db):
             Users.salary: form.salary,
             Users.status: form.status,
             Users.role: form.role,
-
         })
 
     user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
@@ -105,6 +104,7 @@ def add_user_balance(user_id, money, db):
         Users.balance: user_balance
     })
     db.commit()
+
 
 def sup_user_balance(user_id, money, db):
     user = db.query(Users).filter(Users.id == user_id).first()

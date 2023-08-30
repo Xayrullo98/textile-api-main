@@ -1,6 +1,7 @@
-from datetime import date, datetime
+from datetime import  datetime
 
 from fastapi import HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from functions.supplier_balances import create_supplier_balance_func
@@ -9,14 +10,12 @@ from models.category_details import Category_details
 from models.currencies import Currencies
 from models.supplier_balances import Supplier_balance
 from models.suppliers import Suppliers
-from models.users import Users
-from models.warehouse_products import Warehouse_products
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 from models.supplies import Supplies
 
 
-def all_supplies(search, category_detail_id, supplier_id, currency_id, status, page, limit, db):
+def all_supplies(search, from_date, to_date, category_detail_id, supplier_id, currency_id, status, page, limit, db):
     supplies = db.query(Supplies).options(
         joinedload(Supplies.currency),
         joinedload(Supplies.category_detail),
@@ -24,6 +23,8 @@ def all_supplies(search, category_detail_id, supplier_id, currency_id, status, p
         joinedload(Supplies.received_user),
         joinedload(Supplies.user)
     )
+    if from_date and to_date:
+        supplies = supplies.filter(and_(Supplies.date >= from_date, Supplies.date <= to_date))
     if search:
         search_formatted = f"%{search}%"
         supplies = supplies.filter(Supplies.quantity.like(search_formatted) |

@@ -9,15 +9,13 @@ from models.suppliers import Suppliers
 
 
 def all_suppliers(search, page, limit, db):
+    suppliers = db.query(Suppliers).options(joinedload(Suppliers.supplier_phones))
     if search:
         search_formatted = "%{}%".format(search)
-        search_filter = Suppliers.name.like(search_formatted) | Suppliers.address.like(
-            search_formatted) | Suppliers.comment.like(search_formatted)
-    else:
-        search_filter = Suppliers.id > 0
+        suppliers = suppliers.name.like(search_formatted) | suppliers.address.like(
+            search_formatted) | suppliers.comment.like(search_formatted)
 
-    suppliers = db.query(Suppliers).options(joinedload(Suppliers.supplier_phones)).filter(search_filter).order_by(
-        Suppliers.id.desc())
+    suppliers = suppliers.order_by(Suppliers.id.desc())
 
     return pagination(suppliers, page, limit)
 

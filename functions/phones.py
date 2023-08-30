@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 
-from utils.db_operations import save_in_db
 from utils.pagination import pagination
 from models.phones import Phones
 

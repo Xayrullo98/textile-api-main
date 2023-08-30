@@ -10,8 +10,6 @@ class CreateOrder_for_masters(BaseModel):
 
 class UpdateOrder_for_masters(BaseModel):
     id: int
-    order_id: int
-    stage_id: int
     connected_user_id: int
     quantity: float = Field(..., ge=0)
 

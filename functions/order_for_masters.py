@@ -11,6 +11,7 @@ from functions.users import  add_user_balance
 from models.order_for_masters import Order_for_masters
 from models.orders import Orders
 from models.stages import Stages
+from models.users import Users
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -53,7 +54,7 @@ def create_order_for_master(form, thisuser, db):
     )
 
     save_in_db(db, new_order_h_db)
-    stage = one_stage(id=form.stage_id,db=db)
+    stage = one_stage(id=form.stage_id, db=db)
     money = form.quantity * stage.kpi
     create_order_history(order_id=form.order_id,stage_id=form.stage_id,kpi_money=money,thisuser=thisuser,db=db)
     add_user_balance(user_id=thisuser.id,money=money,db=db)
@@ -62,12 +63,9 @@ def create_order_for_master(form, thisuser, db):
 
 def update_order_for_master(form, db, thisuser):
     the_one(db, Order_for_masters, form.id)
-    the_one(db, Orders, form.order_id)
-    the_one(db, Stages, form.stage_id)
+    the_one(db, Users, form.connected_user_id)
     db.query(Order_for_masters).filter(Order_for_masters.id == form.id).update({
-        Order_for_masters.order_id: form.order_id,
         Order_for_masters.date: date.today(),
-        Order_for_masters.stage_id: form.stage_id,
         Order_for_masters.quantity: form.quantity,
         Order_for_masters.connected_user_id: form.connected_user_id,
         Order_for_masters.user_id: thisuser.id

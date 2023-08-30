@@ -40,33 +40,28 @@ def one_order_done_product(ident, db):
 
 
 def create_order_done_product(form, thisuser, db):
-    the_one(db, Orders, form.order_id)
-    the_one(db, Stages, form.stage_id)
+    order = the_one(db, Orders, form.order_id)
     new_order_h_db = Order_done_products(
         order_id=form.order_id,
         datetime=date.today(),
-        stage_id=form.stage_id,
+        stage_id=order.stage_id,
         worker_id=form.worker_id,
         quantity=form.quantity,
         user_id=thisuser.id,
 
     )
     save_in_db(db, new_order_h_db)
-    stage = one_stage(id=form.stage_id, db=db)
+    stage = one_stage(id=order.stage_id, db=db)
     money = form.quantity * stage.kpi
-    create_order_history(order_id=form.order_id, stage_id=form.stage_id, kpi_money=money, thisuser=form.worker_id, db=db)
+    create_order_history(order_id=form.order_id, stage_id=order.stage_id, kpi_money=money, thisuser=form.worker_id, db=db)
     add_user_balance(user_id=form.worker_id, money=money, db=db)
-    update_order_stage(order_id=form.order_id,stage_id=form.stage_id,db=db)
+    update_order_stage(order_id=form.order_id, stage_id=order.stage_id, db=db)
 
 
 def update_order_done_product(form, db, thisuser):
     the_one(db, Order_done_products, form.id)
-    the_one(db, Orders, form.order_id)
-    the_one(db, Stages, form.stage_id)
     db.query(Order_done_products).filter(Order_done_products.id == form.id).update({
-        Order_done_products.order_id: form.order_id,
         Order_done_products.date: date.today(),
-        Order_done_products.stage_id: form.stage_id,
         Order_done_products.quantity: form.quantity,
         Order_done_products.user_id: thisuser.id
     })

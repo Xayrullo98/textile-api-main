@@ -69,6 +69,7 @@ def update_stage_user(form, thisuser, db):
     db.commit()
 
 
-# def delete_stage_user(id, db):
-#     the_one(db, Stage_users, id)
-#     db.query(Stage_users).filter(Stage_users.id == id).delete()
+def delete_stage_user(stage_id, db):
+    the_one(db, Stages, stage_id)
+    db.query(Stage_users).filter(Stage_users.stage_id == stage_id).delete()
+    db.commit()

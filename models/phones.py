@@ -12,7 +12,7 @@ from models.users import Users
 class Phones(Base):
     __tablename__ = 'phones'
     id = Column(Integer, primary_key=True)
-    number = Column(String(15), nullable=False)
+    number = Column(String(16), nullable=False)
     source = Column(String(255), nullable=False)
     source_id = Column(Integer, nullable=False)
     comment = Column(String(255), nullable=False)
@@ -32,6 +32,6 @@ class Phones(Base):
 
     this_supplier = relationship('Suppliers', foreign_keys=[source_id],
                                  primaryjoin=lambda: and_(Suppliers.id == Phones.source_id,
-                                                          Phones.source == "suppliers"), backref=backref("supplier_phones"))
+                                                          Phones.source == "supplier"), backref=backref("supplier_phones"))
 
 

@@ -1,6 +1,7 @@
 import inspect
-
-from fastapi import APIRouter, HTTPException, Depends, Body
+import datetime
+from datetime import date
+from fastapi import APIRouter, HTTPException, Depends, Body, Query
 from sqlalchemy.orm import Session
 from functions.supplies import create_supply, update_supply, all_supplies, delete_supply, one_supply, supply_confirm
 
@@ -29,7 +30,9 @@ def add_supply(form: SuppliesCreate, db: Session = Depends(database),current_use
 @supplies_router.get('/', status_code=200)
 def get_supplies(search: str = None,  id: int = 0,
                  category_detail_id: int = 0, supplier_id: int = 0,
-                 currency_id:int=0, status: bool = None, page: int = 1,
+                 from_date: date = Query("2023-08-28"),
+                 to_date: date = Query(datetime.date.today()),
+                 currency_id: int=0, status: bool = None, page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
@@ -37,7 +40,8 @@ def get_supplies(search: str = None,  id: int = 0,
         return one_supply(id, db)
 
     else:
-        return all_supplies(search=search, category_detail_id=category_detail_id,
+        return all_supplies(search=search, from_date=from_date, to_date=to_date,
+                            category_detail_id=category_detail_id,
                             supplier_id=supplier_id, currency_id=currency_id, status=status, page=page, limit=limit, db=db)
 
 

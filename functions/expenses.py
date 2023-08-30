@@ -1,6 +1,6 @@
 from _decimal import Decimal
 from datetime import date
-
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, Session
@@ -79,26 +79,36 @@ def update_expense(form, db, thisuser):
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
-    # agar kassada yetarli pul mavjud bo'lsa kassadan ayiramiz, aks holda xatolik chiqaaradi
-    if kassa.balance >= form.money:
-        db.query(Expenses).filter(Expenses.id == form.id).update({
-            Expenses.currency_id: form.currency_id,
-            Expenses.date: date.today(),
-            Expenses.money: form.money,
-            Expenses.source: form.source,
-            Expenses.source_id: form.source_id,
-            Expenses.kassa_id: form.kassa_id,
-            Expenses.comment: form.comment,
-            Expenses.user_id: thisuser.id
-        })
 
-        db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
-            Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
-        })
-        db.commit()
+    # Check if the expense was created within the last 5 minutes
+    creation_time = old_expense.date
+    current_time = datetime.now()
+    time_difference = current_time - creation_time
+    allowed_time_difference = timedelta(minutes=5)
+
+    if time_difference <= allowed_time_difference:
+        if kassa.balance >= form.money:
+            db.query(Expenses).filter(Expenses.id == form.id).update({
+                Expenses.currency_id: form.currency_id,
+                Expenses.date: date.today(),
+                Expenses.money: form.money,
+                Expenses.source: form.source,
+                Expenses.source_id: form.source_id,
+                Expenses.kassa_id: form.kassa_id,
+                Expenses.comment: form.comment,
+                Expenses.user_id: thisuser.id
+            })
+
+            db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
+                Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
+            })
+            db.commit()
+
+        else:
+            raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
     else:
-        raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
+        raise HTTPException(status_code=400, detail="Expense can only be updated within 5 minutes after creation")
 
 
 def add_salary_to_workers():

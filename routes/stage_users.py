@@ -3,7 +3,8 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from functions.stage_users import create_stage_user, update_stage_user, all_stage_user, one_stage_user
+from functions.stage_users import create_stage_user, update_stage_user, all_stage_user, one_stage_user, \
+    delete_stage_user
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
 from schemes.stage_users import CreateStage_user, UpdateStage_user
@@ -47,3 +48,10 @@ def stage_user_update(form: UpdateStage_user, db: Session = Depends(database),
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
 
 
+@stage_users_router.delete("/delete")
+def stage_user_delete(stage_id: int = 0,  db: Session = Depends(database),
+                      current_user: UserCurrent = Depends(get_current_active_user)):
+
+    role_verification(current_user, inspect.currentframe().f_code.co_name)
+    delete_stage_user(stage_id, db)
+    raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
