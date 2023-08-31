@@ -15,20 +15,13 @@ def all_category_details(search, measure_id, category_id, page, limit, db):
     if search:
         search_formatted = "%{}%".format(search)
         category_details = category_details.name.like(search_formatted)
-    else:
-        category_details = category_details
     if measure_id:
         category_details = category_details.filter(Category_details.measure_id == measure_id)
-    else:
-        category_details = category_details
 
     if category_id:
         category_details = category_details.filter(Category_details.category_id == category_id)
-    else:
-        category_details = category_details
 
     category_details = category_details.order_by(Category_details.id.desc())
-
     return pagination(category_details, page, limit)
 
 

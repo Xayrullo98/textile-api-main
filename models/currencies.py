@@ -1,12 +1,12 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, func
+from sqlalchemy import Column, String, Integer
 
 
 class Currencies(Base):
     __tablename__ = 'currencies'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     money = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)

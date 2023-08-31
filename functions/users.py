@@ -1,19 +1,20 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
-from functions.phones import create_phone, update_phone, delete_phone
+from functions.phones import create_phone, delete_phone
 from models.phones import Phones
 from routes.login import get_password_hash
-from utils.db_operations import save_in_db, the_one, the_one_username
+from utils.db_operations import the_one, the_one_username
 from utils.pagination import pagination
 from models.users import Users
 
 
 def all_users(search, role, page, limit, status, db):
-    users = db.query(Users).options(joinedload(Users.user_phones))
+    users = db.query(Users).join(Users.user_phones).options(joinedload(Users.user_phones))
     if search:
         search_formatted = "%{}%".format(search)
-        users = users.filter(Users.name.like(search_formatted) | Users.username.like(search_formatted))
+        users = users.filter(Users.name.like(search_formatted) | Users.username.like(search_formatted) |
+                             Phones.number.like(search_formatted))
 
     if status in [True, False]:
         users = users.filter(Users.status == status)
@@ -25,8 +26,8 @@ def all_users(search, role, page, limit, status, db):
 
 def create_user(form, db, thisuser):
     the_one_username(db=db, model=Users, username=form.username)
-    # if thisuser.role not in ['admin', 'stage_admin']:
-    #     raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
+    if thisuser.role != 'admin':
+        raise HTTPException(status_code=400, detail="Sizga ruhsat berilmagan")
     if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
         raise HTTPException(status_code=400, detail="Role error")
     new_user_db = Users(
@@ -59,8 +60,6 @@ def one_user(db, id):
 
 def update_user(form, thisuser, db):
     user = the_one(db=db, model=Users, id=form.id)
-    if thisuser.role not in ['admin', 'stage_admin']:
-        raise HTTPException(status_code=400, detail="sizga ruhsat berilmagan")
     if form.role not in ['admin', 'stage_admin', 'stage_user', 'warehouseman']:
         raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:

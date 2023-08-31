@@ -19,7 +19,8 @@ def all_incomes(currency_id, from_date, to_date, page, limit, db):
     if currency_id:
         incomes = incomes.filter(Incomes.id == currency_id)
     if from_date and to_date:
-        incomes = incomes.filter(and_(Incomes.date >= from_date, Incomes.date <= to_date))
+        incomes = incomes.filter(func.date(Incomes.date).between(from_date, to_date))
+
     incomes = incomes.order_by(Incomes.id.desc())
     return pagination(incomes, page, limit)
 

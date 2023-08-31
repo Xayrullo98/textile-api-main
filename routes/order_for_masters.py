@@ -27,9 +27,10 @@ def add_stage_user(form: CreateOrder_for_masters, db: Session = Depends(database
 
 @order_for_masters_router.get('/', status_code=200)
 def get_order_for_masters(stage_id: int = 0, order_id: int = 0,  id: int = 0, page: int = 1,
-                    from_date: date = Query('2023-08-29'), to_date: date = Query(date.today()),
-                    limit: int = 25, db: Session = Depends(database),
-                    current_user: UserCurrent = Depends(get_current_active_user)):
+                          from_date: date = Query(date.today()), to_date: date = Query(date.today()),
+                          limit: int = 25, db: Session = Depends(database),
+                          current_user: UserCurrent = Depends(get_current_active_user)):
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_order_for_master(id, db)

@@ -32,7 +32,6 @@ def create_warehouse_product(category_detail_id, quantity, price, currency_id, d
     the_one(db, Category_details, category_detail_id)
     the_one(db, Currencies, currency_id)
     check = get_warehouse_product_with_price(category_detail_id=category_detail_id,db=db,price=price)
-    print(check,'dddddddddddddddddddddddddddd')
     if check:
         warehouse_quantity = check.quantity+quantity
         db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).update({
@@ -66,6 +65,7 @@ def update_warehouse_product(form, db, thisuser):
 
 def get_warehouse_product(category_detail_id, db):
     return db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).all()
+
 
 def get_warehouse_product_with_price(category_detail_id,price, db):
 

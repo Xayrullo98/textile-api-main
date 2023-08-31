@@ -8,7 +8,7 @@ from models.users import Users
 
 class Supplies(Base):
     __tablename__ = 'supplies'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     category_detail_id = Column(Integer, ForeignKey("category_details.id"), nullable=False)
     quantity = Column(Numeric, nullable=False)
     date = Column(DateTime, nullable=False)

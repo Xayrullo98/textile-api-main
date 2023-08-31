@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
@@ -13,17 +12,11 @@ def all_categories(search, status, page, limit, db):
         search_formatted = f"%{search}%"
         search_filter = Categories.name.ilike(search_formatted) | Categories.comment.ilike(search_formatted)
         categories_query = categories_query.filter(search_filter)
-    else:
-        categories_query = categories_query.filter(Categories.id > 0)
 
-    if status:
-        categories_query = categories_query.filter(Categories.status == True)
-    if status is False:
-        categories_query = categories_query.filter(Categories.status == False)
-    else:
-        categories_query = categories_query
+    if status in [False, True]:
+        categories_query = categories_query.filter(Categories.status == status)
+
     categories_query = categories_query.order_by(Categories.id.desc())
-
     return pagination(categories_query, page, limit)
 
 

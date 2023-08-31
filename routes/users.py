@@ -28,11 +28,11 @@ def add_user(form: CreateUser, db: Session = Depends(database),
 def get_users(search: str = None,  id: int = 0, role: str = None, page: int = 1,
               limit: int = 25, status: bool = None, db: Session = Depends(database),
               current_user: UserCurrent = Depends(get_current_active_user)):
-    role_verification(current_user, inspect.currentframe().f_code.co_name)
+
     if id:
         return one_user(db, id)
-
     else:
+        role_verification(current_user, inspect.currentframe().f_code.co_name)
         return all_users(search=search, role=role, page=page, limit=limit, status=status, db=db, )
 
 

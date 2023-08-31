@@ -1,22 +1,21 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, join
 
 from functions.phones import create_phone, delete_phone
 from models.phones import Phones
-from models.users import Users
-from utils.db_operations import save_in_db, the_one
+from utils.db_operations import the_one
 from utils.pagination import pagination
 from models.clients import Clients
 
 
 def all_clients(search, page, limit, db):
-    clients = db.query(Clients).options(joinedload(Clients.user), joinedload(Clients.client_phones))
+    clients = db.query(Clients).join(Clients.client_phones).options(joinedload(Clients.user), joinedload(Clients.client_phones))
+
     if search:
         search_formatted = f"%{search}%"
-        clients = clients.filter(Clients.name.like(search_formatted)) | Clients.client_phones.like(search_formatted)
+        clients = clients.filter(Clients.name.like(search_formatted) | Phones.number.like(search_formatted))
 
     clients = clients.order_by(Clients.id.desc())
-
     return pagination(clients, page, limit)
 
 

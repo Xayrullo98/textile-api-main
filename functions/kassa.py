@@ -1,11 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
-from functions.phones import create_phone, delete_phone
 from models.currencies import Currencies
 from models.kassa import Kassas
-from models.phones import Phones
 from utils.db_operations import the_one, the_one_model_name, save_in_db
 from utils.pagination import pagination
 
@@ -20,6 +17,7 @@ def all_kassas(currency_id, search,page, limit, db):
             (Kassas.comment.like(search_formatted)))
     if currency_id:
         kassas = kassas.filter(Kassas.currency_id == currency_id)
+
     kassas = kassas.order_by(Kassas.id.desc())
     return pagination(kassas, page, limit)
 

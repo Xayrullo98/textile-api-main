@@ -39,21 +39,23 @@ def one_stage(id, db):
 
 def create_stage(form, thisuser, db):
     the_one_model_name(db, Stages, form.name)
-    existing_stage = db.query(Stages).filter(and_(Stages.number == form.number, Stages.category_id == form.category_id)).first()
-    if existing_stage:
-        raise HTTPException(status_code=400, detail="Bir xil category_id uchun number bir xil bo'laolmaydi")
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
-
+    existing_stage = db.query(Stages).filter(Stages.category_id == form.category_id).order_by(
+            Stages.number.desc()).first()
+    next_number = existing_stage.number + 1 if existing_stage else 1
+    # Create a new stage instance
     new_stage_db = Stages(
         name=form.name,
-        number=form.number,
+        number=next_number,
         kpi=form.kpi,
         comment=form.comment,
         status=True,
         measure_id=form.measure_id,
         category_id=form.category_id,
-        user_id=thisuser.id, )
+        user_id=thisuser.id,
+    )
+    # Save the new stage to the database
     save_in_db(db, new_stage_db)
 
 

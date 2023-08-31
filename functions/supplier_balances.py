@@ -15,20 +15,13 @@ def all_supplier_balances(search, currencies_id, supplies_id, from_date, to_date
     if search:
         search_formatted = "%{}%".format(search)
         supplier_balances = supplier_balances.balance.like(search_formatted)
-    else:
-        supplier_balances = supplier_balances.filter(Supplier_balance.id > 0)
-
     if currencies_id:
         supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id == currencies_id)
-    else:
-        supplier_balances = supplier_balances.filter(Supplier_balance.currencies_id > 0)
     if from_date and to_date:
         supplier_balances = supplier_balances.filter(and_(
             Supplier_balance.date >= from_date, Supplier_balance.date <= to_date))
     if supplies_id:
         supplier_balances = supplier_balances.filter(Supplier_balance.supplies_id == supplies_id)
-    else:
-        supplier_balances = supplier_balances.filter(Supplier_balance.supplies_id > 0)
 
     supplier_balances = supplier_balances.order_by(Supplier_balance.id.desc())
     return pagination(supplier_balances, page, limit)
@@ -53,14 +46,14 @@ def create_supplier_balance(form, db, thisuser):
     save_in_db(db, new_supplier_balance_db)
 
 
-def create_supplier_balance_func(balance, currencies_id, supplies_id, db, thisuser):
+def create_supplier_balance_func(balance, currencies_id, supplies_id, db):
     the_one(db, Supplies, supplies_id)
     the_one(db, Currencies, currencies_id)
     new_supplier_balance_db = Supplier_balance(
         balance=balance,
         currencies_id=currencies_id,
         supplies_id=supplies_id,
-        user_id=thisuser.id, )
+    )
     save_in_db(db, new_supplier_balance_db)
 
 

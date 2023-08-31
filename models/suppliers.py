@@ -8,7 +8,7 @@ from models.users import Users
 
 class Suppliers(Base):
     __tablename__ = 'suppliers'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     address = Column(String(255), nullable=False)
     comment = Column(String(255), nullable=False)

@@ -18,7 +18,7 @@ order_histories_router = APIRouter(
 
 @order_histories_router.get('/all')
 def get_order_histories(id: int = 0,  page: int = 1, order_id: int = 0, stage_id: int = 0,
-                        from_date: date = Query('2023-08-29'), to_date: date = Query(date.today()),
+                        from_date: date = Query(date.today()), to_date: date = Query(date.today()),
                         limit: int = 25, db: Session = Depends(database),
                         current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)

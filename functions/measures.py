@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination

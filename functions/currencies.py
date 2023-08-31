@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
@@ -12,8 +11,7 @@ def all_currencies(search, page, limit, db):
     if search:
         search_formatted = f"%{search}%"
         currencies_query = currencies_query.filter(Currencies.name.ilike(search_formatted))
-    else:
-        currencies_query = currencies_query.filter(Currencies.id > 0)
+
     currencies_query = currencies_query.order_by(Currencies.id.desc())
     return pagination(currencies_query, page, limit)
 
@@ -29,8 +27,8 @@ def create_currency(form, db, thisuser):
 
 def update_currency(form, db, thisuser):
     currency = the_one(db, Currencies, form.id)
-    # if db.query(Currencies).filter(Currencies.name == form.name) and currency.name != form.name:
-    #     raise HTTPException(status_code=400, detail="Bu currency name bazada mavjud")
+    if db.query(Currencies).filter(Currencies.name == form.name) and currency.name != form.name:
+        raise HTTPException(status_code=400, detail="Bu currency name bazada mavjud")
     db.query(Currencies).filter(Currencies.id == form.id).update({
         Currencies.name: form.name,
         Currencies.money: form.money,

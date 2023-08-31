@@ -1,7 +1,7 @@
-from datetime import  datetime
+from datetime import datetime
 
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload
 
 from functions.supplier_balances import create_supplier_balance_func
@@ -23,14 +23,16 @@ def all_supplies(search, from_date, to_date, category_detail_id, supplier_id, cu
         joinedload(Supplies.received_user),
         joinedload(Supplies.user)
     )
+
     if from_date and to_date:
-        supplies = supplies.filter(and_(Supplies.date >= from_date, Supplies.date <= to_date))
+        supplies = supplies.filter(func.date(Supplies.date).between(from_date, to_date))
     if search:
         search_formatted = f"%{search}%"
-        supplies = supplies.filter(Supplies.quantity.like(search_formatted) |
-                                   Supplies.price.like(search_formatted))
+        supplies = supplies.filter(
+            (Supplies.quantity.like(search_formatted)) |
+            (Supplies.price.like(search_formatted))
+        )
 
-    #status bo'yicha filterlash
     if status in [True, False]:
         supplies = supplies.filter(Supplies.status == status)
     if category_detail_id:
@@ -41,9 +43,14 @@ def all_supplies(search, from_date, to_date, category_detail_id, supplier_id, cu
         supplies = supplies.filter(Supplies.currency_id == currency_id)
 
     supplies = supplies.order_by(Supplies.id.desc())
-    # total_price = db.query(func.sum(Supplies.quantity * Supplies.price)).all()
-    # return total_price
-    return pagination(supplies, page, limit)
+
+    supplies_for_price = supplies.group_by(Supplies.currency_id).all()
+    price_data = []
+    for supply in supplies_for_price:
+        total_price = supply.price * supply.quantity
+        price_data.append({"total_price": total_price, "currency": supply.currency.name})
+
+    return {"data": pagination(supplies, page, limit), "price_data": price_data}
 
 
 def one_supply(id, db):
@@ -109,20 +116,19 @@ def update_supply(form, thisuser, db):
 
 def supply_confirm(id, thisuser,  db):
     supply = the_one(db, Supplies, id)
-    if thisuser.role != 'warehouseman':
-        raise HTTPException(status_code=400, detail="Faqat omborchi taminotni qabul qilishi mumkin")
     create_warehouse_product(category_detail_id=supply.category_detail_id, quantity=supply.quantity,
                              price=supply.price, currency_id=supply.currency_id, db=db, thisuser=thisuser)
 
     create_supplier_balance_func(balance=supply.quantity * supply.price, currencies_id=supply.currency_id,
-                                 supplies_id=supply.id, db=db, thisuser=thisuser)
+                                 supplies_id=supply.id, db=db)
     if supply.status == False:
         db.query(Supplies).filter(Supplies.id == id).update({
             Supplies.status: True,
             Supplies.received_user_id: thisuser.id
         })
         db.commit()
-    raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
+    else:
+        raise HTTPException(status_code=400, detail="Bu supply allaqochan tasdiqlangan!")
 
 
 #agar supplyni stutusi true bo'lsa uni o'chira olmaydi

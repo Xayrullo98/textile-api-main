@@ -11,6 +11,7 @@ from models.currencies import Currencies
 from models.expenses import Expenses
 from models.kassa import Kassas
 from models.orders import Orders
+from models.suppliers import Suppliers
 from models.users import Users
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
@@ -39,39 +40,64 @@ def one_expense(ident, db):
 
 def create_expense(form, db, thisuser):
     kassa = the_one(db, Kassas, form.kassa_id)
-    the_one(db, Orders, form.source_id)
     the_one(db, Currencies, form.currency_id)
     if kassa.currency_id != form.currency_id:
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
-    if form.money <= kassa.balance:
-        new_expense_db = Expenses(
-            currency_id=form.currency_id,
-            date=date.today(),
-            money=form.money,
-            source=form.source,
-            source_id=form.source_id,
-            comment=form.comment,
-            kassa_id=form.kassa_id,
-            user_id=thisuser.id,
-        )
-        save_in_db(db, new_expense_db)
 
-        db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
-            Kassas.balance: Kassas.balance - form.money
-        })
-        db.commit()
+    if form.source == "expense":
+        if form.money <= kassa.balance:
+            new_expense_db = Expenses(
+                currency_id=form.currency_id,
+                date=date.today(),
+                money=form.money,
+                source=form.source,
+                source_id=0,
+                comment=form.comment,
+                kassa_id=form.kassa_id,
+                user_id=thisuser.id,
+            )
+            save_in_db(db, new_expense_db)
+            db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
+                Kassas.balance: Kassas.balance - form.money
+            })
+            db.commit()
+
+    if (db.query(Users).filter(Users.id == form.source_id).first() and form.source == "user"
+        and the_one(db, Users, form.source_id)) or \
+        (db.query(Suppliers).filter(Suppliers.id == form.source_id).first()
+         and form.source == "supplier" and the_one(db, Suppliers, form.source_id)):
+
+        if form.money <= kassa.balance:
+            if form.source == "user":
+                sup_user_balance(user_id=form.source_id, money=form.money, db=db)
+            new_expense_db = Expenses(
+                currency_id=form.currency_id,
+                date=date.today(),
+                money=form.money,
+                source=form.source,
+                source_id=form.source_id,
+                comment=form.comment,
+                kassa_id=form.kassa_id,
+                user_id=thisuser.id,
+            )
+            save_in_db(db, new_expense_db)
+
+            db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
+                Kassas.balance: Kassas.balance - form.money
+            })
+            db.commit()
+
+        else:
+            raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
     else:
-        raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
-
-    if form.source == "user":
-        sup_user_balance(user_id=form.source_id, money=form.money, db=db)
+        raise HTTPException(status_code=400, detail="Bu source_id dagi malumot bazada topilmadi")
 
 
 def update_expense(form, db, thisuser):
-    if form.source not in ['supplier', 'user', 'expence']:
+    if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
     old_expense = the_one(db, Expenses, form.id)
     kassa = the_one(db, Kassas, form.kassa_id)

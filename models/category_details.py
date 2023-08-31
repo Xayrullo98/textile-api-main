@@ -7,7 +7,7 @@ from models.users import Users
 
 class Category_details(Base):
     __tablename__ = 'category_details'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     quantity = Column(Integer, nullable=False)
     measure_id = Column(Integer, ForeignKey('measures.id'), nullable=False)

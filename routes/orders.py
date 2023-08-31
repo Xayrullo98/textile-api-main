@@ -1,5 +1,5 @@
 import inspect
-from datetime import date, datetime
+from datetime import date
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
@@ -20,7 +20,7 @@ orders_router = APIRouter(
 @orders_router.get('/all')
 def get_orders(id: int = 0, client_id: int = 0, category_id: int = 0,
                currency_id: int = 0, stage_id: int = 0,
-               from_date: date = Query('2023-08-29'), to_date: date = Query(date.today()), page: int = 1,
+               from_date: date = Query(date.today()), to_date: date = Query(date.today()), page: int = 1,
                limit: int = 25, db: Session = Depends(database),
                current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)

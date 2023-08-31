@@ -13,8 +13,7 @@ from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
 from models.orders import Orders
-from models.stages import Stages
-from models.warehouse_products import Warehouse_products
+
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -76,9 +75,8 @@ def create_order(form, db, thisuser):
     )
     save_in_db(db, new_order_db)
     kassa = one_kassa_via_currency_id(currency_id=form.currency_id,db=db)
-    add_income(currency_id=form.currency_id,money=form.price*form.quantity,source='order',source_id=new_order_db.id,kassa_id=kassa.id,db=db,thisuser=thisuser)
-
-
+    add_income(currency_id=form.currency_id,money=form.price*form.quantity,
+               source='order', source_id=new_order_db.id, kassa_id=kassa.id, db=db, thisuser=thisuser)
 
 
 
@@ -88,7 +86,6 @@ def create_order(form, db, thisuser):
     #agar kiritilayotgan quantitydagi mahsulot
     #omborda bo'lsa, ombordan ayriladi va income bo'ladi
     # warehouse_product = db.query(Warehouse_products).filter(Warehouse_products.category_detail)
-
 
 def update_order(form, db, thisuser):
     order = the_one(db, Orders, form.id)
@@ -112,6 +109,7 @@ def update_order(form, db, thisuser):
     #shu yerda order histiry ni update qilyapmiz
     # id, order_id, stage_id, kpi_money, db, thisuser
     # update_order_history()
+
 def update_order_stage(order_id,stage_id,db):
 
     db.query(Orders).filter(Orders.id == order_id).update({

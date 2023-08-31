@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 class CreateStage(BaseModel):
     name: str
     comment: str
-    number: int
     kpi: float = Field(..., ge=0.1)
     measure_id: int
     category_id: int
@@ -16,7 +15,7 @@ class UpdateStage(BaseModel):
     comment: str
     status: bool
     number: int
-    kpi: float
+    kpi: float = Field(..., ge=0.1)
     measure_id: int
     category_id: int
 

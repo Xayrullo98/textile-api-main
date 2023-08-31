@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey, Float,DateTime,func
 
 class Order_for_masters(Base):
     __tablename__ = 'order_for_masters'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     stage_id = Column(Integer, ForeignKey("stages.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     user_id = Column(Integer,  nullable=False)

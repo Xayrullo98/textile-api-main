@@ -15,14 +15,14 @@ client_router = APIRouter(
 
 
 @client_router.get('/all_clients', status_code=200)
-def get_clients(search: str = None,  id: int = 0,  page: int = 1,
+def get_clients(search: str = None, id: int = 0, page: int = 1,
                 limit: int = 25, db: Session = Depends(database),
                 current_user: UserCurrent = Depends(get_current_active_user)):
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_client(id, db)
     else:
-        return all_clients(search=search, page=page, limit=limit, db=db)
+        return all_clients(search, page, limit, db)
 
 
 @client_router.post('/create')

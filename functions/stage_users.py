@@ -55,6 +55,7 @@ def create_stage_user(stage_id, connected_user_id, thisuser, db):
 def update_stage_user(form, thisuser, db):
     the_one(db, Stage_users, form.id)
     the_one(db, Stages, form.stage_id)
+    the_one(db, Users, form.connected_user_id)
     # existing_stage_user = db.query(Stage_users).filter(
     #     Stage_users.stage_id == form.stage_id,
     # ).first()
@@ -63,13 +64,17 @@ def update_stage_user(form, thisuser, db):
 
     db.query(Stage_users).filter(Stage_users.id == form.id).update({
         Stage_users.stage_id: form.stage_id,
-        # Stage_users.connected_user_id: form.connected_user_id,
+        Stage_users.connected_user_id: form.connected_user_id,
         Stage_users.user_id: thisuser.id
     })
     db.commit()
 
 
-def delete_stage_user(stage_id, db):
+def delete_stage_user(stage_id, connected_user_id, db):
     the_one(db, Stages, stage_id)
-    db.query(Stage_users).filter(Stage_users.stage_id == stage_id).delete()
+    the_one(db, Users, connected_user_id)
+    db.query(Stage_users).filter(
+        Stage_users.stage_id == stage_id,
+        Stage_users.connected_user_id == connected_user_id
+    ).delete()
     db.commit()
