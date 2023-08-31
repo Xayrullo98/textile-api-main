@@ -14,7 +14,7 @@ broken_products_router = APIRouter(
 
 
 @broken_products_router.get('/all')
-def get_broken_products(id: int = 0, category_id: int = 0,  page: int = 1,
+def get_broken_products(id: int = 0, search: str = None, category_id: int = 0,  page: int = 1,
                         limit: int = 25, db: Session = Depends(database),
                         current_user: UserCurrent = Depends(get_current_active_user)
                         ):
@@ -22,4 +22,4 @@ def get_broken_products(id: int = 0, category_id: int = 0,  page: int = 1,
     if id:
         return one_broken(id, db)
     else:
-        return all_broken_products(category_id, page=page, limit=limit, db=db)
+        return all_broken_products(search, category_id, page, limit, db)

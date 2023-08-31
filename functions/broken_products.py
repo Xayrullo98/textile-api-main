@@ -7,9 +7,12 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_broken_products(category_id, page, limit, db):
+def all_broken_products(search, category_id, page, limit, db):
     broken_products = db.query(Broken_products).options(joinedload(Broken_products.category))
 
+    if search:
+        search_formatted = "%{}%".format(search)
+        broken_products = broken_products.filter(Categories.name.like(search_formatted))
     if category_id:
         broken_products = broken_products.filter(Broken_products.category == category_id).all()
     broken_products = broken_products.order_by(Broken_products.id.desc())

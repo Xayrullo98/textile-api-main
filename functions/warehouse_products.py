@@ -8,9 +8,12 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_warehouse_products(currency_id, category_detail_id, page, limit, db):
+def all_warehouse_products(search, currency_id, category_detail_id, page, limit, db):
     warehouse_products = db.query(Warehouse_products).options(
         joinedload(Warehouse_products.category_detail), joinedload(Warehouse_products.currency))
+    if search:
+        search_formatted = "%{}%".format(search)
+        warehouse_products = warehouse_products.filter(Category_details.name.like(search_formatted))
     if category_detail_id:
         warehouse_products = warehouse_products.filter(Warehouse_products.id == category_detail_id)
     if currency_id:
@@ -36,7 +39,7 @@ def create_warehouse_product(category_detail_id, quantity, price, currency_id, d
         warehouse_quantity = check.quantity+quantity
         db.query(Warehouse_products).filter(Warehouse_products.category_detail_id == category_detail_id).update({
             Warehouse_products.quantity: warehouse_quantity,
-
+            Warehouse_products.user_id: thisuser.id
         })
         db.commit()
     else:
