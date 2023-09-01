@@ -18,15 +18,16 @@ def all_suppliers(search, page, limit, db):
             search_formatted) | Suppliers.comment.like(search_formatted) | Phones.number.like(search_formatted))
 
     suppliers = suppliers.order_by(Suppliers.id.desc())
-    # supply_suppliers = db.query(Supplies).filter(Supplies.supplier_id == suppliers).all()
-    #
-    # price_data = []
-    # for supply_supplier in supply_suppliers:
-    #     supplier_balance = db.query(Supplier_balance).filter(Supplier_balance.supplies_id == supply_supplier.id)
-    #     total_price = supplier_balance.balance
-    #     price_data.append({"total_price": total_price, "supplier": supply_supplier.supplier_id.name})
-    # return {"data": pagination(suppliers, page, limit), "price_data": price_data}
-    return pagination(suppliers, page, limit)
+
+    suppliers_for_price = suppliers.group_by(Suppliers.balances).all()
+    price_data = []
+    for supplier in suppliers_for_price:
+        total_price = supplier.balance
+        price_data.append({"total_price": total_price, "currency": supplier.currency.name})
+
+    return {"data": pagination(suppliers, page, limit), "price_data": price_data}
+
+    # return pagination(suppliers, page, limit)
 
 
 def one_supplier(ident, db):

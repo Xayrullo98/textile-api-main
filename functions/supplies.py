@@ -120,7 +120,7 @@ def supply_confirm(id, thisuser,  db):
                              price=supply.price, currency_id=supply.currency_id, db=db, thisuser=thisuser)
 
     create_supplier_balance_func(balance=supply.quantity * supply.price, currencies_id=supply.currency_id,
-                                 supplies_id=supply.id, db=db)
+                                 supplier_id=supply.supplier_id, db=db)
     if supply.status == False:
         db.query(Supplies).filter(Supplies.id == id).update({
             Supplies.status: True,

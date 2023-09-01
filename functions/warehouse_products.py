@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, subqueryload
 
 from models.category_details import Category_details
 from models.currencies import Currencies
@@ -10,7 +10,7 @@ from utils.pagination import pagination
 
 def all_warehouse_products(search, currency_id, category_detail_id, page, limit, db):
     warehouse_products = db.query(Warehouse_products).options(
-        joinedload(Warehouse_products.category_detail), joinedload(Warehouse_products.currency))
+        joinedload(Warehouse_products.category_detail).options(subqueryload(Category_details.measure)), joinedload(Warehouse_products.currency))
     if search:
         search_formatted = "%{}%".format(search)
         warehouse_products = warehouse_products.filter(Category_details.name.like(search_formatted))
@@ -25,7 +25,8 @@ def all_warehouse_products(search, currency_id, category_detail_id, page, limit,
 def one_warehouse_p(ident, db):
     the_item = db.query(Warehouse_products).options(
         joinedload(Warehouse_products.currency),
-        joinedload(Warehouse_products.category_detail)).filter(Warehouse_products.id == ident).first()
+        joinedload(Warehouse_products.category_detail).options(subqueryload(Category_details.measure))
+    ).filter(Warehouse_products.id == ident).first()
     if the_item is None:
         raise HTTPException(status_code=404, detail="Bunday ma'lumot bazada mavjud emas")
     return the_item

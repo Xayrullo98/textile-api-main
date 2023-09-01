@@ -4,6 +4,7 @@ from db import Base
 from sqlalchemy import Column, String, Integer, and_
 
 from models.users import Users
+from models.supplier_balances import Supplier_balance
 
 
 class Suppliers(Base):
@@ -16,4 +17,8 @@ class Suppliers(Base):
 
     user = relationship("Users", foreign_keys=[user_id],
                         primaryjoin=lambda: and_(Users.id == Suppliers.user_id))
+
+    balances = relationship("Supplier_balance", foreign_keys=[id],
+                        primaryjoin=lambda: and_(Supplier_balance.supplier_id == Suppliers.id))
+
     supply = relationship("Supplies", back_populates='supplier')

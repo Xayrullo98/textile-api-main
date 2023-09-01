@@ -23,7 +23,6 @@ class Supplies(Base):
                         primaryjoin=lambda: and_(Users.id == Supplies.user_id))
     received_user = relationship("Users", foreign_keys=[received_user_id],
                         primaryjoin=lambda: and_(Users.id == Supplies.received_user_id))
-    supplier = relationship("Suppliers",back_populates='supply')
-    currency = relationship("Currencies",back_populates='supply')
-    balances = relationship("Supplier_balance", back_populates='supply')
+    supplier = relationship("Suppliers", back_populates='supply')
+    currency = relationship("Currencies", back_populates='supply')
     category_detail = relationship('Category_details', back_populates='supply')

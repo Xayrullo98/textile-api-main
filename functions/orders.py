@@ -1,18 +1,21 @@
 from datetime import date, datetime
 
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload
 
 from functions.category_details import one_category_detail_via_category
 from functions.incomes import add_income
 from functions.kassa import one_kassa, one_kassa_via_currency_id
 from functions.order_histories import create_order_history, update_order_history
+from functions.users import add_user_balance
 from functions.warehouse_products import  get_warehouse_product
 from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
 from models.orders import Orders
+from models.stage_users import Stage_users
+from models.stages import Stages
 
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
@@ -25,7 +28,7 @@ def all_orders(client_id, category_id, currency_id, stage_id, from_date, to_date
     if client_id:
         orders = orders.filter(Orders.client_id == client_id)
     if from_date and to_date:
-        orders = orders.filter(and_(Orders.date >= from_date, Orders.date <= to_date))
+        orders = orders.filter(func.date(Orders.date).between(from_date, to_date))
     if category_id:
         orders = orders.filter(Orders.category_id == category_id)
     if currency_id:
@@ -82,7 +85,7 @@ def create_order(form, db, thisuser):
 
     #order history will be added after order, kpi_money should be calculated
     kpi_money = 0
-    create_order_history(new_order_db.id, 1, kpi_money, thisuser, db)
+
     #agar kiritilayotgan quantitydagi mahsulot
     #omborda bo'lsa, ombordan ayriladi va income bo'ladi
     # warehouse_product = db.query(Warehouse_products).filter(Warehouse_products.category_detail)
@@ -94,10 +97,12 @@ def update_order(form, db, thisuser):
     the_one(db, Clients, form.client_id)
     the_one(db, Categories, form.category_id)
     the_one(db, Currencies, form.currency_id)
+    stage = the_one(db, Stages, form.stage_id)
     db.query(Orders).filter(Orders.id == form.id).update({
         Orders.client_id: form.client_id,
         Orders.quantity: form.quantity,
         Orders.price: form.price,
+        Orders.date: datetime.now(),
         Orders.currency_id: form.currency_id,
         Orders.category_id: form.category_id,
         Orders.delivery_date: form.delivery_date,
@@ -106,11 +111,15 @@ def update_order(form, db, thisuser):
         Orders.user_id: thisuser.id
     })
     db.commit()
-    #shu yerda order histiry ni update qilyapmiz
-    # id, order_id, stage_id, kpi_money, db, thisuser
-    # update_order_history()
+    # shu yerda order history ga qo'shib ketamiz
+    create_order_history(order.id, form.stage_id, stage.kpi, thisuser.id, db)
+    #connected_user larni balansiga stagedagi kpi money qo'shiladi
+    stage_users = db.query(Stage_users).filter(Stage_users.stage_id == stage.id).all()
+    for stage_user in stage_users:
+        add_user_balance(stage_user.connected_user_id, stage.kpi, db)
 
-def update_order_stage(order_id,stage_id,db):
+
+def update_order_stage(order_id, stage_id, db):
 
     db.query(Orders).filter(Orders.id == order_id).update({
         Orders.stage_id: stage_id })

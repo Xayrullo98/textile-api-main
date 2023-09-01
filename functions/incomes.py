@@ -17,12 +17,18 @@ def all_incomes(currency_id, from_date, to_date, page, limit, db):
         joinedload(Incomes.currency), joinedload(Incomes.order_source),
         joinedload(Incomes.kassa), joinedload(Incomes.user))
     if currency_id:
-        incomes = incomes.filter(Incomes.id == currency_id)
+        incomes = incomes.filter(Incomes.currency_id == currency_id)
     if from_date and to_date:
         incomes = incomes.filter(func.date(Incomes.date).between(from_date, to_date))
 
     incomes = incomes.order_by(Incomes.id.desc())
-    return pagination(incomes, page, limit)
+    incomes_for_price = incomes.group_by(Incomes.currency_id).all()
+    price_data = []
+    for income in incomes_for_price:
+        total_price = income.money
+        price_data.append({"total_price": total_price, "currency": income.currency.name})
+
+    return {"data": pagination(incomes, page, limit), "price_data": price_data}
 
 
 def one_income(ident, db):

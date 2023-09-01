@@ -14,7 +14,7 @@ class Expenses(Base):
     id = Column(Integer, autoincrement=True, primary_key=True)
     money = Column(Float, nullable=False)
     currency_id = Column(Integer, nullable=False)
-    date = Column(Date)
+    date = Column(DateTime)
     user_id = Column(Integer, nullable=False)
     source = Column(String(255), nullable=False)
     source_id = Column(Integer, nullable=False)

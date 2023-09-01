@@ -18,7 +18,7 @@ expenses_router = APIRouter(
 
 
 @expenses_router.get('/all')
-def get_expenses(id: int = 0, currency_id: int = 0,
+def get_expenses(id: int = 0, kassa_id: int = 0,
                  from_date: date = Query(date.today()), to_date: date = Query(date.today()), page: int = 1,
                  limit: int = 25, db: Session = Depends(database),
                  current_user: UserCurrent = Depends(get_current_active_user)):
@@ -26,7 +26,7 @@ def get_expenses(id: int = 0, currency_id: int = 0,
     if id:
         return one_expense(id, db)
     else:
-        return all_expenses(currency_id, from_date, to_date,page=page, limit=limit, db=db)
+        return all_expenses(kassa_id, from_date, to_date, page=page, limit=limit, db=db)
 
 
 @expenses_router.post('/create')
