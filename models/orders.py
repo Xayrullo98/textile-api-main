@@ -35,5 +35,3 @@ class Orders(Base):
     stage = relationship("Stages", foreign_keys=[stage_id],
                             primaryjoin=lambda: and_(Stages.id == Orders.stage_id))
 
-    order_done_product = relationship("Order_done_products", back_populates='order')
-    order_for_master = relationship("Order_for_masters", back_populates='order')

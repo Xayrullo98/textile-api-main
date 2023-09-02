@@ -23,33 +23,41 @@ def all_supplies(search, from_date, to_date, category_detail_id, supplier_id, cu
         joinedload(Supplies.received_user),
         joinedload(Supplies.user)
     )
+    supplies_for_price = db.query(Supplies, func.sum(Supplies.quantity * Supplies.price).label("total_price")).options(joinedload(Supplies.currency))
 
     if from_date and to_date:
         supplies = supplies.filter(func.date(Supplies.date).between(from_date, to_date))
+        supplies_for_price = supplies_for_price.filter(func.date(Supplies.date).between(from_date, to_date))
     if search:
         search_formatted = f"%{search}%"
         supplies = supplies.filter(
             (Supplies.quantity.like(search_formatted)) |
             (Supplies.price.like(search_formatted))
         )
+        supplies_for_price = supplies_for_price.filter(
+            (Supplies.quantity.like(search_formatted)) |
+            (Supplies.price.like(search_formatted))
+        )
 
     if status in [True, False]:
         supplies = supplies.filter(Supplies.status == status)
+        supplies_for_price = supplies_for_price.filter(Supplies.status == status)
     if category_detail_id:
         supplies = supplies.filter(Supplies.category_detail_id == category_detail_id)
+        supplies_for_price = supplies_for_price.filter(Supplies.category_detail_id == category_detail_id)
     if supplier_id:
         supplies = supplies.filter(Supplies.supplier_id == supplier_id)
+        supplies_for_price = supplies_for_price.filter(Supplies.supplier_id == supplier_id)
     if currency_id:
         supplies = supplies.filter(Supplies.currency_id == currency_id)
+        supplies_for_price = supplies_for_price.filter(Supplies.currency_id == currency_id)
 
     supplies = supplies.order_by(Supplies.id.desc())
 
-    supplies_for_price = supplies.group_by(Supplies.currency_id).all()
     price_data = []
+    supplies_for_price = supplies_for_price.group_by(Supplies.currency_id).all()
     for supply in supplies_for_price:
-        total_price = supply.price * supply.quantity
-        price_data.append({"total_price": total_price, "currency": supply.currency.name})
-
+        price_data.append({"total_price": supply.total_price, "currency": supply.Supplies.currency.name})
     return {"data": pagination(supplies, page, limit), "price_data": price_data}
 
 
@@ -78,11 +86,9 @@ def create_supply(form, thisuser, db):
     save_in_db(db, new_supplier_db)
     # after created supply, it should be added warehouse_products
 
-
-
 #agar supplyni stutusi true bo'lsa uni update qila olmaydi
 def update_supply(form, thisuser, db):
-    the_one(db=db, model=Suppliers, id=form.supplier_id)
+    supplier = the_one(db=db, model=Suppliers, id=form.supplier_id)
     the_one(db=db, model=Currencies, id=form.currency_id)
     the_one(db, Category_details, form.category_detail_id)
     supply = the_one(db, Supplies, form.id)
@@ -105,9 +111,9 @@ def update_supply(form, thisuser, db):
 
     balance = supply_quantity.quantity*supply_quantity.price
     differance_balance = balance-form.quantity*form.price
-    supplier = db.query(Supplier_balance).filter(Supplier_balance.supplies_id==form.id).first()
-    balance = supplier.balance+differance_balance
-    db.query(Supplier_balance).filter(Supplier_balance.supplies_id == form.id).update({
+    supplier_balance = db.query(Supplier_balance).filter(Supplier_balance.supplier_id==supplier.id).first()
+    balance = supplier_balance.balance+differance_balance
+    db.query(Supplier_balance).filter(Supplier_balance.supplier_id == form.id).update({
         Supplier_balance.balance: balance,
         Supplier_balance.currencies_id: form.currency_id,
     })
@@ -138,4 +144,3 @@ def delete_supply(id, db):
         raise HTTPException(status_code=400, detail="Bu supplayni statusi true o'chira olmaysiz")
     db.query(Supplies).filter(Supplies.id == id).delete()
     db.commit()
-

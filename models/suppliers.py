@@ -21,4 +21,3 @@ class Suppliers(Base):
     balances = relationship("Supplier_balance", foreign_keys=[id],
                         primaryjoin=lambda: and_(Supplier_balance.supplier_id == Suppliers.id))
 
-    supply = relationship("Supplies", back_populates='supplier')

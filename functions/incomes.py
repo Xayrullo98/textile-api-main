@@ -12,12 +12,16 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_incomes(currency_id, from_date, to_date, page, limit, db):
+def all_incomes(source, source_id, kassa_id, from_date, to_date, page, limit, db):
     incomes = db.query(Incomes).options(
         joinedload(Incomes.currency), joinedload(Incomes.order_source),
         joinedload(Incomes.kassa), joinedload(Incomes.user))
-    if currency_id:
-        incomes = incomes.filter(Incomes.currency_id == currency_id)
+    if source:
+        incomes = incomes.filter(Incomes.source == source)
+    if source_id:
+        incomes = incomes.filter(Incomes.source_id == source_id)
+    if kassa_id:
+        incomes = incomes.filter(Incomes.kassa_id == kassa_id)
     if from_date and to_date:
         incomes = incomes.filter(func.date(Incomes.date).between(from_date, to_date))
 

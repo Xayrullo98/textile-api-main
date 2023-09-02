@@ -8,7 +8,7 @@ from utils.pagination import pagination
 
 
 def all_broken_products(search, category_id, page, limit, db):
-    broken_products = db.query(Broken_products).options(joinedload(Broken_products.category))
+    broken_products = db.query(Broken_products).join(Broken_products.category).options(joinedload(Broken_products.category))
 
     if search:
         search_formatted = "%{}%".format(search)
@@ -20,10 +20,10 @@ def all_broken_products(search, category_id, page, limit, db):
 
 
 def one_broken(ident, db):
-    the_item = db.query(Broken_products).options(
+    the_item = db.query(Broken_products).join(Broken_products.category).options(
         joinedload(Broken_products.category)).filter(Broken_products.id == ident).first()
     if the_item is None:
-        raise HTTPException(status_code=404, detail="Bunday ma'lumot bazada mavjud emas")
+        raise HTTPException(status_code=400, detail="Bunday ma'lumot bazada mavjud emas")
     return the_item
 
 

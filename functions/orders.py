@@ -2,18 +2,17 @@ from datetime import date, datetime
 
 from fastapi import HTTPException
 from sqlalchemy import and_, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, subqueryload
 
-from functions.category_details import one_category_detail_via_category
 from functions.incomes import add_income
 from functions.kassa import one_kassa, one_kassa_via_currency_id
-from functions.order_histories import create_order_history, update_order_history
+from functions.order_histories import create_order_history
 from functions.users import add_user_balance
-from functions.warehouse_products import  get_warehouse_product
 from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
 from models.orders import Orders
+from models.phones import Phones
 from models.stage_users import Stage_users
 from models.stages import Stages
 
@@ -21,10 +20,14 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_orders(client_id, category_id, currency_id, stage_id, from_date, to_date, page, limit, db):
-    orders = db.query(Orders).options(
-        joinedload(Orders.client), joinedload(Orders.currency), joinedload(Orders.user),
-        joinedload(Orders.category))
+def all_orders(search, client_id, category_id, currency_id, stage_id, from_date, to_date, page, limit, db):
+    orders = db.query(Orders).join(Orders.category).options(
+        joinedload(Orders.client).options(subqueryload(Clients.client_phones)), joinedload(Orders.currency), joinedload(Orders.user),
+        joinedload(Orders.category), joinedload(Orders.stage))
+
+    if search:
+        search_formatted = f"%{search}%"
+        orders = orders.filter(Categories.name.like(search_formatted))
     if client_id:
         orders = orders.filter(Orders.client_id == client_id)
     if from_date and to_date:
@@ -42,7 +45,7 @@ def all_orders(client_id, category_id, currency_id, stage_id, from_date, to_date
 def one_order(ident, db):
     the_item = db.query(Orders).options(
         joinedload(Orders.currency), joinedload(Orders.category), joinedload(Orders.user),
-        joinedload(Orders.client)).filter(Orders.id == ident).first()
+        joinedload(Orders.client).options(subqueryload(Clients.client_phones))).filter(Orders.id == ident).first()
     if the_item is None:
         raise HTTPException(status_code=404, detail="Bunday ma'lumot bazada mavjud emas")
     return the_item
@@ -52,18 +55,6 @@ def create_order(form, db, thisuser):
     the_one(db, Clients, form.client_id)
     the_one(db, Categories, form.category_id)
     the_one(db, Currencies, form.currency_id)
-    category_details = one_category_detail_via_category(category_id=form.category_id, db=db)
-
-    for category_detail in category_details:
-        warehouse_products = get_warehouse_product(category_detail_id=category_detail.id, db=db)
-        warehouse_product_quantity = sum([warehouse_product.quantity for warehouse_product in warehouse_products])
-
-        category_detail_quantity = category_detail.quantity * form.quantity
-        if category_detail_quantity > warehouse_product_quantity:
-            raise HTTPException(status_code=404,
-                                detail=f"Omborda  {category_detail.name}dan  {warehouse_product_quantity}ta qolgan ")
-
-
     new_order_db = Orders(
             client_id=form.client_id,
             date=datetime.now(),
@@ -72,7 +63,7 @@ def create_order(form, db, thisuser):
             price=form.price,
             currency_id=form.currency_id,
             delivery_date=form.delivery_date,
-            stage_id=1,
+            stage_id=0,
             order_status=False,
             user_id=thisuser.id,
     )
@@ -124,3 +115,12 @@ def update_order_stage(order_id, stage_id, db):
     db.query(Orders).filter(Orders.id == order_id).update({
         Orders.stage_id: stage_id })
     db.commit()
+
+
+def order_delete(id, db):
+    order = the_one(db, Orders, id)
+    if order.stage_id != 0:
+        raise HTTPException(status_code=400, detail="Orderni faqat stage_id=0 ga teng bo'lganda o'chirish mumkin")
+    db.query(Orders).filter(Orders.id == id).delete()
+    db.commit()
+

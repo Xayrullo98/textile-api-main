@@ -15,7 +15,3 @@ class Users(Base):
     balance = Column(Float, nullable=True,default=0)
     role = Column(String(255), nullable=False)
     token = Column(String(255), nullable=True)
-
-    stage_user = relationship("Stage_users", back_populates='connected_user')
-    order_done_product = relationship("Order_done_products", back_populates='user')
-    order_for_master = relationship("Order_for_masters", back_populates='user')

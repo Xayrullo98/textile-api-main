@@ -1,7 +1,7 @@
 import inspect
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from functions.categories import create_category, update_category, all_categories
+from functions.categories import create_category, update_category, all_categories, one_category
 from models.categories import Categories
 from routes.login import get_current_active_user
 from utils.role_verification import role_verification
@@ -31,9 +31,9 @@ def get_categories(search: str = None,  id: int = 0, status: bool = None, page: 
 
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
-        return the_one(db=db, model=Categories, id=id)
+        return one_category(id, db)
     else:
-        return all_categories(search=search, status=status, page=page, limit=limit, db=db, )
+        return all_categories(search=search, status=status, page=page, limit=limit, db=db)
 
 
 @categories_router.put("/update")

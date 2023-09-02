@@ -11,6 +11,3 @@ class Categories(Base):
     comment = Column(String(999), nullable=False)
     status = Column(Boolean, nullable=False,default=True)
     user_id = Column(Integer, nullable=False)
-
-    category_detail = relationship('Category_details', back_populates='category')
-    stage = relationship("Stages", back_populates='category')

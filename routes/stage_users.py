@@ -11,10 +11,13 @@ from schemes.stage_users import CreateStage_user, UpdateStage_user
 from db import database
 
 from schemes.users import UserCurrent
+from utils.role_verification import role_verification
+
 stage_users_router = APIRouter(
     prefix="/stage_users",
     tags=["Stage user operation"]
 )
+
 
 @stage_users_router.post('/add')
 def add_stage_user(connected_users_id: List[CreateStage_user], stage_id: int = 0,
@@ -32,7 +35,7 @@ def get_stage_users(stage_id: int = 0, connected_user_id: int = 0, search: str =
                     id: int = 0, page: int = 1,
                     limit: int = 25, db: Session = Depends(database),
                     current_user: UserCurrent = Depends(get_current_active_user)):
-    from utils.role_verification import role_verification
+
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     if id:
         return one_stage_user(id, db)
@@ -44,7 +47,6 @@ def get_stage_users(stage_id: int = 0, connected_user_id: int = 0, search: str =
 def stage_user_update(form: UpdateStage_user, db: Session = Depends(database),
                       current_user: UserCurrent = Depends(get_current_active_user)):
 
-    from utils.role_verification import role_verification
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     update_stage_user(form, current_user, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")
@@ -54,7 +56,6 @@ def stage_user_update(form: UpdateStage_user, db: Session = Depends(database),
 def stage_user_delete(stage_id: int = 0, connected_user_id: int = 0,  db: Session = Depends(database),
                       current_user: UserCurrent = Depends(get_current_active_user)):
 
-    from utils.role_verification import role_verification
     role_verification(current_user, inspect.currentframe().f_code.co_name)
     delete_stage_user(stage_id, connected_user_id, db)
     raise HTTPException(status_code=200, detail="Amaliyot muvaffaqiyatli amalga oshirildi")

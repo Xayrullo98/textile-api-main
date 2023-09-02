@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from db import Base
 from models.categories import Categories
@@ -17,7 +17,6 @@ class Uploaded_files(Base):
 
     user = relationship('Users', foreign_keys=[user_id],
                         primaryjoin=lambda: and_(Users.id == Uploaded_files.user_id))
-
-    category_source = relationship('Categories', foreign_keys=[source_id],
-                                   primaryjoin=lambda: and_(Categories.id == Uploaded_files.source_id))
-
+    category = relationship('Categories', foreign_keys=[source_id],
+                             primaryjoin=lambda: and_(Categories.id == Uploaded_files.source_id, Uploaded_files.source == "category"),
+                             backref=backref("category_files"))

@@ -37,7 +37,7 @@ def one_stage_user(id, db):
 
 def create_stage_user(stage_id, connected_user_id, thisuser, db):
     the_one(db, Stages, stage_id)
-    the_one(db, Users, connected_user_id)
+    # the_one(db, Users, connected_user_id)
     existing_stage_user = db.query(Stage_users).filter(
         Stage_users.stage_id == stage_id,
         Stage_users.connected_user_id == connected_user_id
@@ -53,17 +53,16 @@ def create_stage_user(stage_id, connected_user_id, thisuser, db):
 
 
 def update_stage_user(form, thisuser, db):
-    the_one(db, Stage_users, form.id)
-    the_one(db, Stages, form.stage_id)
+    stage_user = the_one(db, Stage_users, form.id)
     the_one(db, Users, form.connected_user_id)
-    # existing_stage_user = db.query(Stage_users).filter(
-    #     Stage_users.stage_id == form.stage_id,
-    # ).first()
-    # if existing_stage_user:
-    #     raise HTTPException(status_code=400, detail="Bu stage_id uchun bu connected_user_id bog'langan")
+    existing_stage_user = db.query(Stage_users).filter(
+        Stage_users.stage_id == stage_user.stage_id,
+        Stage_users.connected_user_id == form.connected_user_id
+    ).first()
+    if existing_stage_user:
+        raise HTTPException(status_code=400, detail="Bu stage_id uchun bu connected_user_id bog'langan")
 
     db.query(Stage_users).filter(Stage_users.id == form.id).update({
-        Stage_users.stage_id: form.stage_id,
         Stage_users.connected_user_id: form.connected_user_id,
         Stage_users.user_id: thisuser.id
     })

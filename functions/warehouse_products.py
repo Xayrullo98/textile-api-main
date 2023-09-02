@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload, subqueryload
 
 from models.category_details import Category_details
@@ -9,21 +10,35 @@ from utils.pagination import pagination
 
 
 def all_warehouse_products(search, currency_id, category_detail_id, page, limit, db):
-    warehouse_products = db.query(Warehouse_products).options(
-        joinedload(Warehouse_products.category_detail).options(subqueryload(Category_details.measure)), joinedload(Warehouse_products.currency))
+    warehouse_products = db.query(Warehouse_products).join(Warehouse_products.category_detail).options(
+        joinedload(Warehouse_products.category_detail).options(subqueryload(Category_details.measure)),
+        joinedload(Warehouse_products.currency))
+    products_for_price = db.query(Warehouse_products, func.sum(Warehouse_products.quantity * Warehouse_products.price).label("total_price")).options(
+        joinedload(Warehouse_products.currency))
     if search:
         search_formatted = "%{}%".format(search)
         warehouse_products = warehouse_products.filter(Category_details.name.like(search_formatted))
+        products_for_price = products_for_price.filter(
+            (Warehouse_products.quantity.like(search_formatted)) |
+            (Warehouse_products.price.like(search_formatted))
+        )
     if category_detail_id:
         warehouse_products = warehouse_products.filter(Warehouse_products.id == category_detail_id)
+        products_for_price = products_for_price.filter(Warehouse_products.id == category_detail_id)
     if currency_id:
         warehouse_products = warehouse_products.filter(Warehouse_products.id == currency_id)
+        products_for_price = products_for_price.filter(Warehouse_products.id == currency_id)
     warehouse_products = warehouse_products.order_by(Warehouse_products.id.desc())
-    return pagination(warehouse_products, page, limit)
+
+    price_data = []
+    products_for_price = products_for_price.group_by(Warehouse_products.currency_id).all()
+    for w_product in products_for_price:
+        price_data.append({"total_price": w_product.total_price, "currency": w_product.Warehouse_products.currency.name})
+    return {"data": pagination(warehouse_products, page, limit), "price_data": price_data}
 
 
 def one_warehouse_p(ident, db):
-    the_item = db.query(Warehouse_products).options(
+    the_item = db.query(Warehouse_products).join(Warehouse_products.category_detail).options(
         joinedload(Warehouse_products.currency),
         joinedload(Warehouse_products.category_detail).options(subqueryload(Category_details.measure))
     ).filter(Warehouse_products.id == ident).first()

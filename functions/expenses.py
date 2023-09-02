@@ -16,10 +16,14 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_expenses(kassa_id, from_date, to_date, page, limit, db):
+def all_expenses(source, source_id, kassa_id, from_date, to_date, page, limit, db):
     expenses = db.query(Expenses).options(
         joinedload(Expenses.currency), joinedload(Expenses.order_source),
         joinedload(Expenses.kassa), joinedload(Expenses.user))
+    if source:
+        expenses = expenses.filter(Expenses.source == source)
+    if source_id:
+        expenses = expenses.filter(Expenses.source_id == source_id)
     if kassa_id:
         expenses = expenses.filter(Expenses.kassa_id == kassa_id)
     if from_date and to_date:
@@ -94,27 +98,28 @@ def create_expense(form, db, thisuser):
                     Kassas.balance: Kassas.balance - form.money
                 })
                 db.commit()
-            if form.source == "user" and currency.name == "so'm":
-                sup_user_balance(user_id=form.source_id, money=form.money, db=db)
+            if form.source == "user":
+                if currency.name == "so'm":
+                    sup_user_balance(user_id=form.source_id, money=form.money, db=db)
 
-                new_expense_db = Expenses(
-                    currency_id=form.currency_id,
-                    date=datetime.now(),
-                    money=form.money,
-                    source=form.source,
-                    source_id=form.source_id,
-                    comment=form.comment,
-                    kassa_id=form.kassa_id,
-                    user_id=thisuser.id,
-                )
-                save_in_db(db, new_expense_db)
+                    new_expense_db = Expenses(
+                        currency_id=form.currency_id,
+                        date=datetime.now(),
+                        money=form.money,
+                        source=form.source,
+                        source_id=form.source_id,
+                        comment=form.comment,
+                        kassa_id=form.kassa_id,
+                        user_id=thisuser.id,
+                    )
+                    save_in_db(db, new_expense_db)
 
-                db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
-                    Kassas.balance: Kassas.balance - form.money
-                })
-                db.commit()
-            else:
-                raise HTTPException(status_code=400, detail="Userga faqat so'm kassadan chiqim qilishingiz mumkin")
+                    db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
+                        Kassas.balance: Kassas.balance - form.money
+                    })
+                    db.commit()
+                else:
+                    raise HTTPException(status_code=400, detail="Userga faqat so'm kassadan chiqim qilishingiz mumkin")
         else:
             raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 

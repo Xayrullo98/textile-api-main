@@ -7,7 +7,6 @@ class CreateStage_user(BaseModel):
 
 class UpdateStage_user(BaseModel):
     id: int
-    stage_id: int
     connected_user_id: int
 
 

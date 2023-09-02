@@ -11,23 +11,15 @@ from models.suppliers import Suppliers
 
 
 def all_suppliers(search, page, limit, db):
-    suppliers = db.query(Suppliers).join(Suppliers.supplier_phones).options(joinedload(Suppliers.supplier_phones))
+    suppliers = db.query(Suppliers).join(Suppliers.supplier_phones).join(Suppliers.balances).options(
+        joinedload(Suppliers.supplier_phones), joinedload(Suppliers.balances).subqueryload(Supplier_balance.currency))
     if search:
         search_formatted = "%{}%".format(search)
         suppliers = suppliers.filter(Suppliers.name.like(search_formatted) | Suppliers.address.like(
             search_formatted) | Suppliers.comment.like(search_formatted) | Phones.number.like(search_formatted))
 
     suppliers = suppliers.order_by(Suppliers.id.desc())
-
-    suppliers_for_price = suppliers.group_by(Suppliers.balances).all()
-    price_data = []
-    for supplier in suppliers_for_price:
-        total_price = supplier.balance
-        price_data.append({"total_price": total_price, "currency": supplier.currency.name})
-
-    return {"data": pagination(suppliers, page, limit), "price_data": price_data}
-
-    # return pagination(suppliers, page, limit)
+    return pagination(suppliers, page, limit)
 
 
 def one_supplier(ident, db):

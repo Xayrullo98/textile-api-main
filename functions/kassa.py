@@ -58,8 +58,7 @@ def update_kassa(form, thisuser,  db):
 
 def one_kassa_via_currency_id(currency_id, db):
     the_item = db.query(Kassas).options(
-        joinedload(Kassas.user), joinedload(Kassas.currency),
-        joinedload(Kassas.kassa_phones)
+        joinedload(Kassas.user), joinedload(Kassas.currency)
     ).filter(Kassas.currency_id == currency_id).first()
     if the_item is None:
         raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")

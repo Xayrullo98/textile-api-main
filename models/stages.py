@@ -1,7 +1,11 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, Numeric, and_
+
+from models.categories import Categories
+from models.measures import Measures
+from models.users import Users
 
 
 class Stages(Base):
@@ -13,11 +17,12 @@ class Stages(Base):
     user_id = Column(Integer, nullable=False)
     status = Column(Boolean, nullable=False)
     kpi = Column(Numeric, nullable=False)
-    measure_id = Column(Integer, ForeignKey("measures.id"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    measure_id = Column(Integer, nullable=False)
+    category_id = Column(Integer, nullable=False)
 
-    measure = relationship("Measures", back_populates='stage')
-    category = relationship("Categories", back_populates='stage')
-    stage_user = relationship("Stage_users", back_populates='stage')
-    order_done_product = relationship("Order_done_products", back_populates='stage')
-    order_for_master = relationship("Order_for_masters", back_populates='stage')
+    measure = relationship("Measures", foreign_keys=[measure_id],
+                           primaryjoin=lambda: and_(Measures.id == Stages.measure_id))
+    category = relationship("Categories", foreign_keys=[category_id],
+                           primaryjoin=lambda: and_(Categories.id == Stages.category_id))
+    stage_user = relationship("Users", foreign_keys=[user_id],
+                        primaryjoin=lambda: and_(Users.id == Stages.user_id))

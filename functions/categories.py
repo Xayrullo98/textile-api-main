@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy.orm import joinedload
 
 from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
@@ -6,7 +7,7 @@ from models.categories import Categories
 
 
 def all_categories(search, status, page, limit, db):
-    categories_query = db.query(Categories)
+    categories_query = db.query(Categories).options(joinedload(Categories.category_files))
 
     if search:
         search_formatted = f"%{search}%"
@@ -19,6 +20,12 @@ def all_categories(search, status, page, limit, db):
     categories_query = categories_query.order_by(Categories.id.desc())
     return pagination(categories_query, page, limit)
 
+
+def one_category(ident, db):
+    the_item = db.query(Categories).options(joinedload(Categories.category_files)).filter(Categories.id == ident).first()
+    if the_item is None:
+        raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")
+    return the_item
 
 def create_category(form, db, thisuser):
     the_one_model_name(db, Categories, form.name)

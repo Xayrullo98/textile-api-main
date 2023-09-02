@@ -1,7 +1,9 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, and_
+
+from models.users import Users
 
 
 class Currencies(Base):
@@ -11,5 +13,7 @@ class Currencies(Base):
     money = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
 
-    balances = relationship("Supplier_balance", back_populates='currency')
-    supply = relationship("Supplies", back_populates='currency')
+    user = relationship("Users", foreign_keys=[user_id],
+                        primaryjoin=lambda: and_(Users.id == Currencies.user_id))
+
+

@@ -1,19 +1,29 @@
 from sqlalchemy.orm import relationship
 
 from db import Base
-from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, func
+from sqlalchemy import Column, Integer, Float, DateTime, func, and_
+
+from models.orders import Orders
+from models.stages import Stages
+from models.users import Users
 
 
 class Order_done_products(Base):
     __tablename__ = 'order_done_products'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    stage_id = Column(Integer, ForeignKey("stages.id"), nullable=False)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    stage_id = Column(Integer, nullable=False)
+    order_id = Column(Integer, nullable=False)
     user_id = Column(Integer, nullable=False)
-    worker_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    worker_id = Column(Integer, nullable=False)
     quantity = Column(Float, nullable=False)
     datetime = Column(DateTime, default=func.now(), nullable=False)
 
-    stage = relationship("Stages", back_populates='order_done_product')
-    order = relationship("Orders", back_populates='order_done_product')
-    user = relationship("Users", back_populates='order_done_product')
+    stage = relationship("Stages", foreign_keys=[stage_id],
+                         primaryjoin=lambda: and_(Stages.id == Order_done_products.stage_id))
+    order = relationship("Orders", foreign_keys=[order_id],
+                         primaryjoin=lambda: and_(Orders.id == Order_done_products.order_id))
+    user = relationship("Users", foreign_keys=[user_id],
+                         primaryjoin=lambda: and_(Users.id == Order_done_products.user_id))
+    worker = relationship("Users", foreign_keys=[worker_id],
+                         primaryjoin=lambda: and_(Users.id == Order_done_products.worker_id))
+

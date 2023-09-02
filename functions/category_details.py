@@ -31,10 +31,20 @@ def one_category_detail(id, db):
     if the_item is None:
         raise HTTPException(status_code=400, detail="Bu malumot bazada mavjud")
 
+
 def create_category_detail(form, db, thisuser):
-    the_one_model_name(db, Category_details, form.name)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
+    # Check if a record with the same name and category_id already exists
+    existing_record = db.query(Category_details).filter(
+        Category_details.name == form.name,
+        Category_details.category_id == form.category_id
+    ).first()
+
+    if existing_record:
+        # Handle the validation error (e.g., raise an exception)
+        raise ValueError("Bu kategoriyada bu nomdagi detal allaqachon mavjud.")
+
     new_currencie_db = Category_details(
         name=form.name,
         quantity=form.quantity,
@@ -49,8 +59,15 @@ def update_category_detail(form, db, thisuser):
     category_detail = the_one(db, Category_details, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
-    if db.query(Category_details).filter(Category_details.name == form.name).first() and category_detail.name != form.name:
-        raise HTTPException(status_code=400, detail=f"Bazada bunday number({form.number}) mavjud!")
+    # Check if a record with the same name and category_id already exists
+    existing_record = db.query(Category_details).filter(
+        Category_details.name == form.name,
+        Category_details.category_id == form.category_id
+    ).first()
+
+    if existing_record:
+        # Handle the validation error (e.g., raise an exception)
+        raise ValueError("Bu kategoriyada bu nomdagi detal allaqachon mavjud.")
     db.query(Category_details).filter(Category_details.id == form.id).update({
         Category_details.name: form.name,
         Category_details.quantity: form.quantity,
