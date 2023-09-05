@@ -60,6 +60,7 @@ def create_order(form, db, thisuser):
             client_id=form.client_id,
             date=datetime.now(),
             quantity=form.quantity,
+            production_quantity=form.production_quantity,
             category_id=form.category_id,
             price=form.price,
             currency_id=form.currency_id,

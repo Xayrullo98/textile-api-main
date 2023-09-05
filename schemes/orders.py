@@ -9,6 +9,7 @@ class CreateOrder(BaseModel):
     currency_id: int
     price: float = Field(..., ge=0.1)
     quantity: float = Field(..., ge=0.1)
+    production_quantity: float = Field(..., ge=0.1)
     delivery_date: date
 
 
