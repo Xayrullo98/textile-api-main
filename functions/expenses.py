@@ -6,6 +6,7 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload, Session
 
 from db import SessionLocal
+from functions.supplier_balances import expense_supplier_balance
 from functions.users import sup_user_balance
 from models.currencies import Currencies
 from models.expenses import Expenses
@@ -87,6 +88,7 @@ def create_expense(form, db, thisuser):
 
         if form.money <= kassa.balance:
             if form.source == "supplier":
+                expense_supplier_balance(form.money, form.currency_id, form.supplier_id, db)
                 new_expense_db = Expenses(
                     currency_id=form.currency_id,
                     date=datetime.now(),
@@ -103,6 +105,7 @@ def create_expense(form, db, thisuser):
                     Kassas.balance: Kassas.balance - form.money
                 })
                 db.commit()
+
             if form.source == "user":
                 if currency.name == "so'm":
                     sup_user_balance(user_id=form.source_id, money=form.money, db=db)
