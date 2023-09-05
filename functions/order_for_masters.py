@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
-from functions.order_histories import create_order_history
 from functions.orders import update_order_stage
 from functions.stages import one_stage
 from functions.users import  add_user_balance
@@ -56,7 +55,7 @@ def create_order_for_master(form, thisuser, db):
     save_in_db(db, new_order_h_db)
     stage = one_stage(id=form.stage_id, db=db)
     money = form.quantity * stage.kpi
-    create_order_history(order_id=form.order_id,stage_id=form.stage_id,kpi_money=money,thisuser=thisuser,db=db)
+
     add_user_balance(user_id=thisuser.id,money=money,db=db)
     update_order_stage(order_id=form.order_id, stage_id=form.stage_id, db=db)
 
