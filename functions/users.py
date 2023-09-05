@@ -53,7 +53,8 @@ def create_user(form, db, thisuser):
 
 def one_user(db, id):
     the_item = db.query(Users).options(
-        joinedload(Users.user_phones), joinedload(Users.user_files)).filter(Users.id == id).first()
+        joinedload(Users.user_phones
+        ), joinedload(Users.user_files)).filter(Users.id == id).first()
     if the_item:
         return the_item
     raise HTTPException(status_code=400, detail="bunday user mavjud emas")
