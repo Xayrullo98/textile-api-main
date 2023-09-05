@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import joinedload
 
+from utils.db_operations import the_one
 from utils.pagination import pagination
 from models.phones import Phones
 

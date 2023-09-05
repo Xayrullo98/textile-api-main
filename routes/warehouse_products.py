@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from functions.warehouse_products import one_warehouse_p, all_warehouse_products, update_warehouse_product
 from routes.login import get_current_active_user
-from schemes.warehouse_products import UpdateWarehouse_products
 from utils.role_verification import role_verification
 from db import database
 from schemes.users import UserCurrent

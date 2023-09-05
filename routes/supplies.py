@@ -28,7 +28,7 @@ def add_supply(form: SuppliesCreate, db: Session = Depends(database),current_use
 @supplies_router.get('/', status_code=200)
 def get_supplies(search: str = None,  id: int = 0,
                  category_detail_id: int = 0, supplier_id: int = 0,
-                 from_date: date = Query(date.today()),
+                 from_date: date = Query(None),
                  to_date: date = Query(date.today()),
                  currency_id: int = 0, status: bool = None, page: int = 1,
                  limit: int = 25, db: Session = Depends(database),

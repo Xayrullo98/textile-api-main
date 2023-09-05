@@ -111,6 +111,7 @@ def update_order(form, thisuser, db):
             stage_users = db.query(Stage_users).filter(Stage_users.stage_id == stage.id).all()
             for stage_user in stage_users:
                 add_user_balance(stage_user.connected_user_id, stage.kpi, db)
+
     else:
         stage = the_one(db, Stages, form.stage_id)
         db.query(Orders).filter(Orders.id == form.id).update({
