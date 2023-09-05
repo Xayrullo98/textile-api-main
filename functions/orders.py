@@ -1,18 +1,17 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload, subqueryload
 
 from functions.incomes import add_income
-from functions.kassa import one_kassa, one_kassa_via_currency_id
+from functions.kassa import one_kassa_via_currency_id
 from functions.order_histories import create_order_history
 from functions.users import add_user_balance
 from models.categories import Categories
 from models.clients import Clients
 from models.currencies import Currencies
 from models.orders import Orders
-from models.phones import Phones
 from models.stage_users import Stage_users
 from models.stages import Stages
 
@@ -20,7 +19,7 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_orders(search, client_id, category_id, currency_id, stage_id, from_date, to_date, page, limit, db):
+def all_orders(search, user_id, client_id, category_id, currency_id, stage_id, from_date, to_date, page, limit, db):
     orders = db.query(Orders).join(Orders.category).options(
         joinedload(Orders.client).options(subqueryload(Clients.client_phones)), joinedload(Orders.currency), joinedload(Orders.user),
         joinedload(Orders.category), joinedload(Orders.stage))
@@ -30,6 +29,8 @@ def all_orders(search, client_id, category_id, currency_id, stage_id, from_date,
         orders = orders.filter(Categories.name.like(search_formatted))
     if client_id:
         orders = orders.filter(Orders.client_id == client_id)
+    if user_id:
+        orders = orders.filter(Orders.user_id == user_id)
     if from_date and to_date:
         orders = orders.filter(func.date(Orders.date).between(from_date, to_date))
     if category_id:

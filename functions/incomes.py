@@ -16,6 +16,8 @@ def all_incomes(source, source_id, kassa_id, from_date, to_date, page, limit, db
     incomes = db.query(Incomes).options(
         joinedload(Incomes.currency), joinedload(Incomes.order_source),
         joinedload(Incomes.kassa), joinedload(Incomes.user))
+    incomes_for_price = db.query(Incomes, func.sum(Incomes.money).label("total_price")).options(
+        joinedload(Incomes.currency))
     if source:
         incomes = incomes.filter(Incomes.source == source)
     if source_id:
@@ -26,11 +28,10 @@ def all_incomes(source, source_id, kassa_id, from_date, to_date, page, limit, db
         incomes = incomes.filter(func.date(Incomes.date).between(from_date, to_date))
 
     incomes = incomes.order_by(Incomes.id.desc())
-    incomes_for_price = incomes.group_by(Incomes.currency_id).all()
+    incomes_for_price = incomes_for_price.group_by(Incomes.currency_id).all()
     price_data = []
     for income in incomes_for_price:
-        total_price = income.money
-        price_data.append({"total_price": total_price, "currency": income.currency.name})
+        price_data.append({"total_price": income.total_price, "currency": income.Incomes.currency.name})
 
     return {"data": pagination(incomes, page, limit), "price_data": price_data}
 
