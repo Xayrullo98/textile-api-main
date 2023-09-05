@@ -20,21 +20,26 @@ def all_expenses(source, source_id, kassa_id, from_date, to_date, page, limit, d
     expenses = db.query(Expenses).options(
         joinedload(Expenses.currency), joinedload(Expenses.order_source),
         joinedload(Expenses.kassa), joinedload(Expenses.user))
+    expenses_for_price = db.query(Expenses, func.sum(Expenses.money).label("total_price")).options(
+        joinedload(Expenses.currency))
     if source:
         expenses = expenses.filter(Expenses.source == source)
+        expenses_for_price = expenses_for_price.filter(Expenses.source == source)
     if source_id:
         expenses = expenses.filter(Expenses.source_id == source_id)
+        expenses_for_price = expenses_for_price.filter(Expenses.source_id == source_id)
     if kassa_id:
         expenses = expenses.filter(Expenses.kassa_id == kassa_id)
+        expenses_for_price = expenses_for_price.filter(Expenses.kassa_id == kassa_id)
     if from_date and to_date:
         expenses = expenses.filter(func.date(Expenses.date).between(from_date, to_date))
+        expenses_for_price = expenses_for_price.filter(func.date(Expenses.date).between(from_date, to_date))
     expenses = expenses.order_by(Expenses.id.desc())
 
-    expenses_for_price = expenses.group_by(Expenses.currency_id).all()
+    expenses_for_price = expenses_for_price.group_by(Expenses.currency_id).all()
     price_data = []
     for expense in expenses_for_price:
-        total_price = expense.money
-        price_data.append({"total_price": total_price, "currency": expense.currency.name})
+        price_data.append({"total_price": expense.total_price, "currency": expense.Expenses.currency.name})
 
     return {"data": pagination(expenses, page, limit), "price_data": price_data}
 

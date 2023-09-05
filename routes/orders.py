@@ -18,7 +18,7 @@ orders_router = APIRouter(
 
 
 @orders_router.get('/all')
-def get_orders(id: int = 0, search: str = None, client_id: int = 0, category_id: int = 0,
+def get_orders(id: int = 0, search: str = None, client_id: int = 0, user_id: int = 0, category_id: int = 0,
                currency_id: int = 0, stage_id: int = 0,
                from_date: date = Query(date.today()), to_date: date = Query(date.today()), page: int = 1,
                limit: int = 25, db: Session = Depends(database),
@@ -27,7 +27,7 @@ def get_orders(id: int = 0, search: str = None, client_id: int = 0, category_id:
     if id:
         return one_order(id, db)
     else:
-        return all_orders(search, client_id, category_id, currency_id, stage_id,
+        return all_orders(search, user_id, client_id, category_id, currency_id, stage_id,
                           from_date, to_date, page, limit, db)
 
 

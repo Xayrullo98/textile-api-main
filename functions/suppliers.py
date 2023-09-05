@@ -4,15 +4,15 @@ from sqlalchemy.orm import joinedload
 from functions.phones import create_phone, delete_phone
 from models.phones import Phones
 from models.supplier_balances import Supplier_balance
-from models.supplies import Supplies
 from utils.db_operations import the_one
 from utils.pagination import pagination
 from models.suppliers import Suppliers
 
 
 def all_suppliers(search, page, limit, db):
-    suppliers = db.query(Suppliers).join(Suppliers.supplier_phones).join(Suppliers.balances).options(
-        joinedload(Suppliers.supplier_phones), joinedload(Suppliers.balances).subqueryload(Supplier_balance.currency))
+    suppliers = db.query(Suppliers).options(
+        joinedload(Suppliers.supplier_phones),
+        joinedload(Suppliers.balances).subqueryload(Supplier_balance.currency))
     if search:
         search_formatted = "%{}%".format(search)
         suppliers = suppliers.filter(Suppliers.name.like(search_formatted) | Suppliers.address.like(
