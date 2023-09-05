@@ -20,7 +20,7 @@ class UpdateOrder(BaseModel):
     currency_id: int
     price: float = Field(..., ge=0.1)
     quantity: float = Field(..., ge=0.1)
+    production_quantity: float = Field(..., ge=0.1)
     delivery_date: date
-    stage_id: int = Field(..., ge=0)
-    order_status: bool
+
     

@@ -22,7 +22,8 @@ class Orders(Base):
     quantity = Column(Numeric)
     production_quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)
-    stage_id = Column(Integer, nullable=False)
+
+
     order_status = Column(Boolean, default=False)
 
     category = relationship("Categories", foreign_keys=[category_id],
@@ -33,6 +34,4 @@ class Orders(Base):
                           primaryjoin=lambda: and_(Clients.id == Orders.client_id))
     currency = relationship("Currencies", foreign_keys=[currency_id],
                             primaryjoin=lambda: and_(Currencies.id == Orders.currency_id))
-    stage = relationship("Stages", foreign_keys=[stage_id],
-                            primaryjoin=lambda: and_(Stages.id == Orders.stage_id))
 
