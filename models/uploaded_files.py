@@ -20,3 +20,5 @@ class Uploaded_files(Base):
     category = relationship('Categories', foreign_keys=[source_id],
                              primaryjoin=lambda: and_(Categories.id == Uploaded_files.source_id, Uploaded_files.source == "category"),
                              backref=backref("category_files"))
+    this_user = relationship('Users', foreign_keys=[source_id],
+                        primaryjoin=lambda: and_(Users.id == Uploaded_files.source_id))

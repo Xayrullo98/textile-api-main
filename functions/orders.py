@@ -81,33 +81,58 @@ def create_order(form, db, thisuser):
     #omborda bo'lsa, ombordan ayriladi va income bo'ladi
     # warehouse_product = db.query(Warehouse_products).filter(Warehouse_products.category_detail)
 
-def update_order(form, db, thisuser):
+def update_order(form, thisuser, db):
     order = the_one(db, Orders, form.id)
-    if order.stutus == True:
+    if order.order_status == True:
         raise HTTPException(status_code=400, detail="Bu order allaqachon tugatilgan")
     the_one(db, Clients, form.client_id)
     the_one(db, Categories, form.category_id)
     the_one(db, Currencies, form.currency_id)
-    stage = the_one(db, Stages, form.stage_id)
-    db.query(Orders).filter(Orders.id == form.id).update({
-        Orders.client_id: form.client_id,
-        Orders.quantity: form.quantity,
-        Orders.price: form.price,
-        Orders.date: datetime.now(),
-        Orders.currency_id: form.currency_id,
-        Orders.category_id: form.category_id,
-        Orders.delivery_date: form.delivery_date,
-        Orders.stage_id: form.stage_id,
-        Orders.order_status: form.order_status,
-        Orders.user_id: thisuser.id
-    })
-    db.commit()
-    # shu yerda order history ga qo'shib ketamiz
-    create_order_history(order.id, form.stage_id, stage.kpi, thisuser.id, db)
-    #connected_user larni balansiga stagedagi kpi money qo'shiladi
-    stage_users = db.query(Stage_users).filter(Stage_users.stage_id == stage.id).all()
-    for stage_user in stage_users:
-        add_user_balance(stage_user.connected_user_id, stage.kpi, db)
+    if form.stage_id == 0:
+        stage = the_one(db, Stages, form.stage_id)
+        db.query(Orders).filter(Orders.id == form.id).update({
+            Orders.client_id: form.client_id,
+            Orders.quantity: form.quantity,
+            Orders.price: form.price,
+            Orders.date: datetime.now(),
+            Orders.currency_id: form.currency_id,
+            Orders.category_id: form.category_id,
+            Orders.delivery_date: form.delivery_date,
+            Orders.stage_id: 0,
+            Orders.order_status: form.order_status,
+            Orders.user_id: thisuser.id
+        })
+        db.commit()
+        # connected_user larni balansiga stagedagi kpi money qo'shiladi
+        if form.order_status == True:
+            # shu yerda order history ga qo'shib ketamiz
+            create_order_history(order.id, form.stage_id, stage.kpi, thisuser.id, db)
+            stage_users = db.query(Stage_users).filter(Stage_users.stage_id == stage.id).all()
+            for stage_user in stage_users:
+                add_user_balance(stage_user.connected_user_id, stage.kpi, db)
+    else:
+        stage = the_one(db, Stages, form.stage_id)
+        db.query(Orders).filter(Orders.id == form.id).update({
+            Orders.client_id: form.client_id,
+            Orders.quantity: form.quantity,
+            Orders.price: form.price,
+            Orders.date: datetime.now(),
+            Orders.currency_id: form.currency_id,
+            Orders.category_id: form.category_id,
+            Orders.delivery_date: form.delivery_date,
+            Orders.stage_id: form.stage_id,
+            Orders.order_status: form.order_status,
+            Orders.user_id: thisuser.id
+        })
+        db.commit()
+
+        #connected_user larni balansiga stagedagi kpi money qo'shiladi
+        if form.order_status == True:
+            # shu yerda order history ga qo'shib ketamiz
+            create_order_history(order.id, form.stage_id, stage.kpi, thisuser.id, db)
+            stage_users = db.query(Stage_users).filter(Stage_users.stage_id == stage.id).all()
+            for stage_user in stage_users:
+                add_user_balance(stage_user.connected_user_id, stage.kpi, db)
 
 
 def update_order_stage(order_id, stage_id, db):

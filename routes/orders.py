@@ -28,7 +28,7 @@ def get_orders(id: int = 0, search: str = None, client_id: int = 0, category_id:
         return one_order(id, db)
     else:
         return all_orders(search, client_id, category_id, currency_id, stage_id,
-                          from_date, to_date, page=page, limit=limit, db=db)
+                          from_date, to_date, page, limit, db)
 
 
 @orders_router.post('/create')

@@ -34,7 +34,7 @@ def upload_files(
 
 @uploaded_files_router.put("/update")
 def file_update(
-        new_file: UploadFile = File(...),
+        new_file: UploadFile = File(None),
         id: int = Form(...),
         source: str = Form(...),
         source_id: int = Form(...),

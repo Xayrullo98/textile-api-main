@@ -55,7 +55,7 @@ def create_category_detail(form, db, thisuser):
     save_in_db(db, new_currencie_db)
 
 
-def update_category_detail(form, db, thisuser):
+def update_category_detail(form,  thisuser, db):
     category_detail = the_one(db, Category_details, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
@@ -65,7 +65,7 @@ def update_category_detail(form, db, thisuser):
         Category_details.category_id == form.category_id
     ).first()
 
-    if existing_record:
+    if existing_record and category_detail.name != form.name:
         # Handle the validation error (e.g., raise an exception)
         raise ValueError("Bu kategoriyada bu nomdagi detal allaqachon mavjud.")
     db.query(Category_details).filter(Category_details.id == form.id).update({

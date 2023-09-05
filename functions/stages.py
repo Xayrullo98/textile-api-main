@@ -3,6 +3,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
+from models.category_details import Category_details
 from models.measures import Measures
 from utils.db_operations import save_in_db, the_one, the_one_model_name
 from utils.pagination import pagination
@@ -38,9 +39,17 @@ def one_stage(id, db):
 
 
 def create_stage(form, thisuser, db):
-    the_one_model_name(db, Stages, form.name)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
+
+    existing_stage = db.query(Stages).filter(
+        Stages.name == form.name,
+        Stages.category_id == form.category_id
+    ).first()
+
+    if existing_stage:
+        # Handle the validation error (e.g., raise an exception)
+        raise ValueError("Bu kategoriyada bu nomdagi jarayon allaqachon mavjud.")
     existing_stage = db.query(Stages).filter(Stages.category_id == form.category_id).order_by(
             Stages.number.desc()).first()
     next_number = existing_stage.number + 1 if existing_stage else 1
@@ -63,8 +72,14 @@ def update_stage(form, thisuser, db):
     stage = the_one(db, Stages, form.id)
     the_one(db=db, model=Measures, id=form.measure_id)
     the_one(db=db, model=Categories, id=form.category_id)
-    if db.query(Stages).filter(Stages.name == form.name).first() and stage.name != form.name:
-        raise HTTPException(status_code=400, detail=f"Bazada bunday name({form.name}) mavjud!")
+    existing_stage = db.query(Stages).filter(
+        Stages.name == form.name,
+        Stages.category_id == form.category_id
+    ).first()
+
+    if existing_stage and stage.name != form.name:
+        # Handle the validation error (e.g., raise an exception)
+        raise ValueError("Bu kategoriyada bu nomdagi jarayon allaqachon mavjud.")
     existing_stage = db.query(Stages).filter(
         and_(Stages.number == form.number, Stages.category_id == form.category_id)).first()
     if existing_stage and stage.category_id != form.category_id:

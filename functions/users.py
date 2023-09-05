@@ -64,16 +64,25 @@ def update_user(form, thisuser, db):
         raise HTTPException(status_code=400, detail="Role error")
     if db.query(Users).filter(Users.username == form.username).first() and user.username != form.username:
         raise HTTPException(status_code=400, detail="Bu username bazada mavjud")
-    if form.password_hash is None:
+    if form.password_hash == "":
         db.query(Users).filter(Users.id == form.id).update({
             Users.name: form.name,
             Users.username: form.username,
-            Users.password_hash: user.password,
+            Users.password_hash: user.password_hash,
             Users.salary: form.salary,
             Users.status: form.status,
             Users.role: form.role,
-
         })
+        user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
+        for phone in user_phones:
+            delete_phone(id=phone.id, db=db)
+
+        for i in form.phones:
+            comment = i.comment
+            number = i.number
+            create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
+                         db=db, commit=False)
+        db.commit()
     else:
         db.query(Users).filter(Users.id == form.id).update({
             Users.name: form.name,
@@ -84,16 +93,16 @@ def update_user(form, thisuser, db):
             Users.role: form.role,
         })
 
-    user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
-    for phone in user_phones:
-        delete_phone(id=phone.id, db=db)
+        user_phones = db.query(Phones).filter(Phones.source_id == user.id).all()
+        for phone in user_phones:
+            delete_phone(id=phone.id, db=db)
 
-    for i in form.phones:
-        comment = i.comment
-        number = i.number
-        create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
-                     db=db, commit=False)
-    db.commit()
+        for i in form.phones:
+            comment = i.comment
+            number = i.number
+            create_phone(number=number, source='user', source_id=user.id, comment=comment, user_id=thisuser.id,
+                         db=db, commit=False)
+        db.commit()
 
 
 def add_user_balance(user_id, money, db):

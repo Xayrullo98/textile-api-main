@@ -4,9 +4,9 @@ from sqlalchemy.orm import joinedload
 
 from models.categories import Categories
 from models.uploaded_files import Uploaded_files
+from models.users import Users
 
 from utils.db_operations import the_one
-from utils.pagination import pagination
 
 
 def one_file(ident, db):
@@ -18,10 +18,11 @@ def one_file(ident, db):
 
 
 def create_file(new_files, source, source_id, comment, thisuser, db):
-    if source not in ['category']:
+    if source not in ['category', "user"]:
         raise HTTPException(status_code=400, detail="Source error")
-    the_one(db, Categories, source_id)
-    if db.query(Categories).filter(Categories.id == source_id).first() and source == "category":
+
+    if (the_one(db, Categories, source_id) and source == "category")\
+            or (the_one(db, Users, source_id) and source == "user"):
         uploaded_file_objects = []
 
         for new_file in new_files:
@@ -52,23 +53,33 @@ def delete_file(id, db):
 
 
 def update_file(id, new_file, source, source_id, comment, thisuser, db):
-
-    if source not in ['category']:
+    old_file = the_one(db, Uploaded_files, id)
+    if source not in ['category', 'user']:
         raise HTTPException(status_code=400, detail="Source error")
-    the_one(db, Categories, source_id)
-    if db.query(Categories).filter(Categories.id == source_id).first() and source == "category":
+    if (the_one(db, Categories, source_id) and source == "category") \
+            or (the_one(db, Users, source_id) and source == "user"):
+        if new_file:
+            file_location = f"Uploaded_files/{new_file.filename}"
+            with open(file_location, "wb+") as file_object:
+                file_object.write(new_file.file.read())
+            db.query(Uploaded_files).filter(Uploaded_files.id == id).update({
+                Uploaded_files.file: file_location,
+                Uploaded_files.source: source,
+                Uploaded_files.source_id: source_id,
+                Uploaded_files.comment: comment,
+                Uploaded_files.user_id: thisuser.id
+            })
+            db.commit()
+        if new_file is None:
+            db.query(Uploaded_files).filter(Uploaded_files.id == id).update({
+                Uploaded_files.file: old_file.file,
+                Uploaded_files.source: source,
+                Uploaded_files.source_id: source_id,
+                Uploaded_files.comment: comment,
+                Uploaded_files.user_id: thisuser.id
+            })
+            db.commit()
 
-        file_location = f"Uploaded_files/{new_file.filename}"
-        with open(file_location, "wb+") as file_object:
-            file_object.write(new_file.file.read())
-        db.query(Uploaded_files).filter(Uploaded_files.id == id).update({
-            Uploaded_files.file: file_location,
-            Uploaded_files.source: source,
-            Uploaded_files.source_id: source_id,
-            Uploaded_files.comment: comment,
-            Uploaded_files.user_id: thisuser.id
-        })
-        db.commit()
     else:
         raise HTTPException(status_code=400, detail="source va source_id bir biriga to'g'ri kelmadi")
 
