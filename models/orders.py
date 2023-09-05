@@ -20,6 +20,7 @@ class Orders(Base):
     date = Column(DateTime, nullable=False)
     price = Column(Numeric)
     quantity = Column(Numeric)
+    production_quantity = Column(Numeric)
     delivery_date = Column(Date, nullable=False)
     stage_id = Column(Integer, nullable=False)
     order_status = Column(Boolean, default=False)
