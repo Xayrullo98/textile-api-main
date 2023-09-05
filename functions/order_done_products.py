@@ -1,3 +1,4 @@
+import datetime
 from datetime import date
 
 from fastapi import HTTPException
@@ -38,30 +39,43 @@ def one_order_done_product(ident, db):
 
 
 def create_order_done_product(form, thisuser, db):
-    order = the_one(db, Orders, form.order_id)
+    stage = one_stage(id=form.stage_id, db=db)
+    done_product = db.query(Order_done_products).filter(Order_done_products.order_id==form.order_id,
+                                                        Order_done_products.stage_id==form.stage_id,
+                                                        Order_done_products.datetime==datetime.datetime.now().date(),).first()
+    if not done_product:
 
-    new_order_h_db = Order_done_products(
-        order_id=form.order_id,
-        datetime=date.today(),
-        stage_id=order.stage_id,
-        worker_id=form.worker_id,
-        quantity=form.quantity,
-        kpi_money=form.kpi_money,
-        user_id=thisuser.id,
+        new_order_h_db = Order_done_products(
+            order_id=form.order_id,
+            datetime=datetime.datetime.now().date(),
+            stage_id=form.stage_id,
+            worker_id=form.worker_id,
+            quantity=form.quantity,
+            kpi_money=stage.kpi,
+            user_id=thisuser.id,
 
-    )
-    save_in_db(db, new_order_h_db)
-    stage = one_stage(id=order.stage_id, db=db)
+        )
+        save_in_db(db, new_order_h_db)
+    else:
+        quantity = done_product.quantity+form.quantity
+        db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                             Order_done_products.stage_id == form.stage_id,
+                                             Order_done_products.datetime == datetime.datetime.now().date(), ).update({
+            Order_done_products.datetime: datetime.datetime.now().date(),
+            Order_done_products.quantity: quantity,
+
+        })
+        db.commit()
+
     money = form.quantity * stage.kpi
-
     add_user_balance(user_id=form.worker_id, money=money, db=db)
-    update_order_stage(order_id=form.order_id, stage_id=order.stage_id, db=db)
+
 
 
 def update_order_done_product(form, db, thisuser):
     the_one(db, Order_done_products, form.id)
     db.query(Order_done_products).filter(Order_done_products.id == form.id).update({
-        Order_done_products.date: date.today(),
+        Order_done_products.datetime: date.today(),
         Order_done_products.quantity: form.quantity,
         Order_done_products.kpi_money: form.kpi_money,
         Order_done_products.user_id: thisuser.id
