@@ -18,28 +18,40 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_orders(search, user_id, client_id, category_id, currency_id, stage_id, from_date, to_date, page, limit, db):
+def all_orders(search, user_id, client_id, category_id, currency_id,  from_date, to_date, page, limit, db):
     orders = db.query(Orders).join(Orders.category).options(
         joinedload(Orders.client).options(subqueryload(Clients.client_phones)), joinedload(Orders.currency),
         joinedload(Orders.user),
         joinedload(Orders.category))
+    orders_for_price = db.query(Orders, func.sum(Orders.price * Orders.quantity).label("total_price")).options\
+        (joinedload(Orders.currency))
 
     if search:
         search_formatted = f"%{search}%"
         orders = orders.filter(Categories.name.like(search_formatted))
+        orders_for_price = orders_for_price.filter(Categories.name.like(search_formatted))
     if client_id:
         orders = orders.filter(Orders.client_id == client_id)
+        orders_for_price = orders_for_price.filter(Orders.client_id == client_id)
     if user_id:
         orders = orders.filter(Orders.user_id == user_id)
+        orders_for_price = orders_for_price.filter(Orders.user_id == user_id)
     if from_date and to_date:
         orders = orders.filter(func.date(Orders.date).between(from_date, to_date))
+        orders_for_price = orders_for_price.filter(func.date(Orders.date).between(from_date, to_date))
     if category_id:
         orders = orders.filter(Orders.category_id == category_id)
+        orders_for_price = orders_for_price.filter(Orders.category_id == category_id)
     if currency_id:
         orders = orders.filter(Orders.currency_id == currency_id)
+        orders_for_price = orders_for_price.filter(Orders.currency_id == currency_id)
 
     orders = orders.order_by(Orders.id.desc())
-    return pagination(orders, page, limit)
+    price_data = []
+    orders_for_price = orders_for_price.group_by(Orders.currency_id).all()
+    for order in orders_for_price:
+        price_data.append({"total_price": order.total_price, "currency": order.Orders.currency.name})
+    return {"data": pagination(orders, page, limit), "price_data": price_data}
 
 
 def one_order(ident, db):
@@ -111,16 +123,14 @@ def update_order(form, thisuser, db):
     #     for stage_user in stage_users:
     #         add_user_balance(stage_user.connected_user_id, stage.kpi, db)
 
-
-def update_order_stage(order_id, stage_id, db):
-    db.query(Orders).filter(Orders.id == order_id).update({
-        Orders.stage_id: stage_id})
-    db.commit()
+#
+# def update_order_stage(order_id, stage_id, db):
+#     db.query(Orders).filter(Orders.id == order_id).update({
+#         Orders.stage_id: stage_id})
+#     db.commit()
 
 
 def order_delete(id, db):
     order = the_one(db, Orders, id)
-    if order.stage_id != 0:
-        raise HTTPException(status_code=400, detail="Orderni faqat stage_id=0 ga teng bo'lganda o'chirish mumkin")
     db.query(Orders).filter(Orders.id == id).delete()
     db.commit()

@@ -21,4 +21,13 @@ def expense_supplier_balance(money, currency_id, supplier_id, db):
     db.commit()
 
 
+def update_supplier_balance(money, currency_id, supplier_id, db):
+    db.query(Supplier_balance).filter(Supplier_balance.supplier_id == supplier_id,
+                                      Supplier_balance.currencies_id == currency_id).update({
+        Supplier_balance.balance: money
+    })
+    db.commit()
+
+
+
 

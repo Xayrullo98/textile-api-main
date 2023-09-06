@@ -56,6 +56,13 @@ def update_kassa(form, thisuser,  db):
     db.commit()
 
 
+def update_kassa_balance(money, kassa_id, db):
+    db.query(Kassas).filter(Kassas.id == kassa_id).update({
+        Kassas.balance: money
+    })
+    db.commit()
+
+
 def one_kassa_via_currency_id(currency_id, db):
     the_item = db.query(Kassas).options(
         joinedload(Kassas.user), joinedload(Kassas.currency)

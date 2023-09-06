@@ -2,14 +2,12 @@ import datetime
 from datetime import date
 
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload
 
-from functions.orders import update_order_stage
 from functions.stages import one_stage
-from functions.users import  add_user_balance
+from functions.users import add_user_balance
 from models.order_done_products import Order_done_products
-from models.orders import Orders
 from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
@@ -18,15 +16,26 @@ def all_order_done_products(order_id, stage_id, from_date, to_date, page, limit,
     order_done_products = db.query(Order_done_products).options(
         joinedload(Order_done_products.order), joinedload(Order_done_products.stage),
         joinedload(Order_done_products.user))
+    order_done_product_stats = db.query(Order_done_products, func.sum(Order_done_products.quantity *
+            Order_done_products.kpi_money).label("total_price")).options(joinedload(Order_done_products.stage))
+
     if order_id:
         order_done_products = order_done_products.filter(Order_done_products.order_id == order_id)
+        order_done_product_stats = order_done_product_stats.filter(Order_done_products.order_id == order_id)
     if stage_id:
         order_done_products = order_done_products.filter(Order_done_products.stage_id == stage_id)
+        order_done_product_stats = order_done_product_stats.filter(Order_done_products.stage_id == stage_id)
     if from_date and to_date:
-        order_done_products = order_done_products.filter(and_(Order_done_products.date >= from_date, Order_done_products.date <= to_date))
+        order_done_products = order_done_products.filter(func.date(Order_done_products.datetime).between(from_date, to_date))
+        order_done_product_stats = order_done_product_stats.filter(func.date(Order_done_products.datetime).
+                                                                   between(from_date, to_date))
 
     order_done_products = order_done_products.order_by(Order_done_products.id.desc())
-    return pagination(order_done_products, page, limit)
+    price_data = []
+    order_done_product_stats = order_done_product_stats.group_by(Order_done_products.order_id).all()
+    for stat in order_done_product_stats:
+        price_data.append({"total_price": stat.total_price, "stage": stat.Order_done_products.stage.name})
+    return {"data": pagination(order_done_products, page, limit), "price_data": price_data}
 
 
 def one_order_done_product(ident, db):

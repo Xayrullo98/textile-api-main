@@ -1,12 +1,11 @@
-from datetime import date
+from datetime import datetime
 
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from functions.orders import update_order_stage
 from functions.stages import one_stage
-from functions.users import  add_user_balance
+from functions.users import add_user_balance
 from models.order_for_masters import Order_for_masters
 from models.orders import Orders
 from models.stages import Stages
@@ -19,15 +18,25 @@ def all_order_for_masters(order_id, stage_id, from_date, to_date, page, limit, d
     order_for_masters = db.query(Order_for_masters).options(
         joinedload(Order_for_masters.order), joinedload(Order_for_masters.stage),
         joinedload(Order_for_masters.user))
+    masters_quantity = db.query(Order_for_masters, func.sum(Order_for_masters.quantity).label("total_quantity")
+                                ).options(joinedload(Order_for_masters.stage))
     if order_id:
         order_for_masters = order_for_masters.filter(Order_for_masters.order_id == order_id)
+        masters_quantity = masters_quantity.filter(Order_for_masters.order_id == order_id)
     if stage_id:
         order_for_masters = order_for_masters.filter(Order_for_masters.stage_id == stage_id)
+        masters_quantity = masters_quantity.filter(Order_for_masters.stage_id == stage_id)
     if from_date and to_date:
-        order_for_masters = order_for_masters.filter(and_(Order_for_masters.date >= from_date, Order_for_masters.date <= to_date))
+        order_for_masters = order_for_masters.filter(func.date(Order_for_masters.datetime).between(from_date, to_date))
+        masters_quantity = masters_quantity.filter(func.date(Order_for_masters.datetime).between(from_date, to_date))
 
     order_for_masters = order_for_masters.order_by(Order_for_masters.id.desc())
-    return pagination(order_for_masters, page, limit)
+
+    quantity_data = []
+    masters_quantity = masters_quantity.group_by(Order_for_masters.stage_id).all()
+    for master in masters_quantity:
+        quantity_data.append({"total_quantity": master.total_quantity, "stage": master.Order_for_masters.stage.name})
+    return {"data": pagination(order_for_masters, page, limit), "total_quantity": quantity_data}
 
 
 def one_order_for_master(ident, db):
@@ -44,7 +53,7 @@ def create_order_for_master(form, thisuser, db):
     the_one(db, Stages, form.stage_id)
     new_order_h_db = Order_for_masters(
         order_id=form.order_id,
-        datetime=date.today(),
+        datetime=datetime.now(),
         stage_id=form.stage_id,
         quantity=form.quantity,
         connected_user_id=form.connected_user_id,
@@ -57,14 +66,14 @@ def create_order_for_master(form, thisuser, db):
     money = form.quantity * stage.kpi
 
     add_user_balance(user_id=thisuser.id,money=money,db=db)
-    update_order_stage(order_id=form.order_id, stage_id=form.stage_id, db=db)
+    # update_order_stage(order_id=form.order_id, stage_id=form.stage_id, db=db)
 
 
 def update_order_for_master(form, db, thisuser):
     the_one(db, Order_for_masters, form.id)
     the_one(db, Users, form.connected_user_id)
     db.query(Order_for_masters).filter(Order_for_masters.id == form.id).update({
-        Order_for_masters.date: date.today(),
+        Order_for_masters.date: datetime.now(),
         Order_for_masters.quantity: form.quantity,
         Order_for_masters.connected_user_id: form.connected_user_id,
         Order_for_masters.user_id: thisuser.id

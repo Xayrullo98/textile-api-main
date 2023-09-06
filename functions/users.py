@@ -107,6 +107,13 @@ def update_user(form, thisuser, db):
         db.commit()
 
 
+def update_user_balance(money, user_id, db):
+    db.query(Users).filter(Users.id == user_id).update({
+        Users.balance: money
+    })
+    db.commit()
+
+
 def add_user_balance(user_id, money, db):
     user = db.query(Users).filter(Users.id == user_id).first()
     user_balance = user.balance + money

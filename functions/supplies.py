@@ -23,7 +23,8 @@ def all_supplies(search, from_date, to_date, category_detail_id, supplier_id, cu
         joinedload(Supplies.received_user),
         joinedload(Supplies.user)
     )
-    supplies_for_price = db.query(Supplies, func.sum(Supplies.quantity * Supplies.price).label("total_price")).options(joinedload(Supplies.currency))
+    supplies_for_price = db.query(Supplies, func.sum(Supplies.quantity * Supplies.price).label("total_price")).options\
+        (joinedload(Supplies.currency))
 
     if from_date and to_date:
         supplies = supplies.filter(func.date(Supplies.date).between(from_date, to_date))

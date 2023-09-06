@@ -6,11 +6,13 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import joinedload, Session
 
 from db import SessionLocal
-from functions.supplier_balances import expense_supplier_balance
-from functions.users import sup_user_balance
+from functions.kassa import update_kassa_balance
+from functions.supplier_balances import expense_supplier_balance, update_supplier_balance
+from functions.users import sup_user_balance, update_user_balance
 from models.currencies import Currencies
 from models.expenses import Expenses
 from models.kassa import Kassas
+from models.supplier_balances import Supplier_balance
 from models.suppliers import Suppliers
 from models.users import Users
 from utils.db_operations import save_in_db, the_one
@@ -88,7 +90,7 @@ def create_expense(form, db, thisuser):
 
         if form.money <= kassa.balance:
             if form.source == "supplier":
-                expense_supplier_balance(form.money, form.currency_id, form.supplier_id, db)
+                expense_supplier_balance(form.money, form.currency_id, form.source_id, db)
                 new_expense_db = Expenses(
                     currency_id=form.currency_id,
                     date=datetime.now(),
@@ -133,10 +135,14 @@ def create_expense(form, db, thisuser):
 
 
 def update_expense(form, thisuser, db):
+    """Bu yerda pulni joy-joyiga qo'yish kerak, kassani balance ni yangilash kerak
+     u,agar source userga teng bo'lsa userni balansini yangilash kerak
+    source supplierga teng bo'lsa suplier_balance yangilab qo'yish kerak"""
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
     old_expense = the_one(db, Expenses, form.id)
     kassa = the_one(db, Kassas, form.kassa_id)
+    currency = the_one(db, Currencies, form.currency_id)
     if kassa.currency_id != form.currency_id:
         raise HTTPException(status_code=400, detail="Bu kassaga bu currency_id bilan qo'shib bo'lmaydi")
     the_one(db, Currencies, form.currency_id)
@@ -148,7 +154,17 @@ def update_expense(form, thisuser, db):
     allowed_time_difference = timedelta(minutes=5)
 
     if time_difference <= allowed_time_difference:
-        if kassa.balance >= form.money:
+        raise HTTPException(status_code=400, detail="Expense can only be updated within 5 minutes after creation")
+    if kassa.balance <= form.money:
+        raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
+    else:
+        kassa_money = kassa.balance + old_expense.money - form.money
+        update_kassa_balance(kassa_money, form.kassa_id, db)
+
+        if form.source == "supplier" and the_one(db, Suppliers, form.source_id):
+            supplier_balance = db.query(Supplier_balance).filter(Supplier_balance.supplier_id == form.source_id).first()
+            supplier_money = supplier_balance.balance + old_expense.money - form.money
+            update_supplier_balance(supplier_money, form.currency_id, form.source_id, db)
             db.query(Expenses).filter(Expenses.id == form.id).update({
                 Expenses.currency_id: form.currency_id,
                 Expenses.date: datetime.now(),
@@ -159,17 +175,37 @@ def update_expense(form, thisuser, db):
                 Expenses.comment: form.comment,
                 Expenses.user_id: thisuser.id
             })
+            db.commit()
 
-            db.query(Kassas).filter(Kassas.id == form.kassa_id).update({
-                Kassas.balance: Kassas.balance - old_expense.money + Decimal(form.money)
+        if form.source == "user" and currency.name == "so'm" and the_one(db, Users, form.source_id):
+            user = the_one(db, Users, form.source_id)
+            user_money = user.balance + old_expense.money - form.money
+            update_user_balance(user_money, form.source_id, db)
+            db.query(Expenses).filter(Expenses.id == form.id).update({
+                Expenses.currency_id: form.currency_id,
+                Expenses.date: datetime.now(),
+                Expenses.money: form.money,
+                Expenses.source: form.source,
+                Expenses.source_id: form.source_id,
+                Expenses.kassa_id: form.kassa_id,
+                Expenses.comment: form.comment,
+                Expenses.user_id: thisuser.id
             })
             db.commit()
 
-        else:
-            raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
-
-    else:
-        raise HTTPException(status_code=400, detail="Expense can only be updated within 5 minutes after creation")
+        if form.source == "expense":
+            update_kassa_balance(kassa_money, form.kassa_id, db)
+            db.query(Expenses).filter(Expenses.id == form.id).update({
+                Expenses.currency_id: form.currency_id,
+                Expenses.date: datetime.now(),
+                Expenses.money: form.money,
+                Expenses.source: form.source,
+                Expenses.source_id: form.source_id,
+                Expenses.kassa_id: form.kassa_id,
+                Expenses.comment: form.comment,
+                Expenses.user_id: thisuser.id
+            })
+            db.commit()
 
 
 def add_salary_to_workers():
