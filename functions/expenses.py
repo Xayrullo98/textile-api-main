@@ -153,15 +153,12 @@ def update_expense(form, thisuser, db):
     time_difference = current_time - creation_time
     allowed_time_difference = timedelta(minutes=5)
 
-    if time_difference <= allowed_time_difference:
+    if time_difference.seconds <= allowed_time_difference.seconds:
         raise HTTPException(status_code=400, detail="Expense can only be updated within 5 minutes after creation")
     if kassa.balance <= form.money:
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
-    else:
-        kassa_money = kassa.balance + old_expense.money - form.money
-        update_kassa_balance(kassa_money, form.kassa_id, db)
 
-        if form.source == "supplier" and the_one(db, Suppliers, form.source_id):
+    if form.source == "supplier" and the_one(db, Suppliers, form.source_id):
             supplier_balance = db.query(Supplier_balance).filter(Supplier_balance.supplier_id == form.source_id).first()
             supplier_money = supplier_balance.balance + old_expense.money - form.money
             update_supplier_balance(supplier_money, form.currency_id, form.source_id, db)
@@ -177,7 +174,7 @@ def update_expense(form, thisuser, db):
             })
             db.commit()
 
-        if form.source == "user" and currency.name == "so'm" and the_one(db, Users, form.source_id):
+    elif form.source == "user" and currency.name == "so'm" and the_one(db, Users, form.source_id):
             user = the_one(db, Users, form.source_id)
             user_money = user.balance + old_expense.money - form.money
             update_user_balance(user_money, form.source_id, db)
@@ -193,8 +190,8 @@ def update_expense(form, thisuser, db):
             })
             db.commit()
 
-        if form.source == "expense":
-            update_kassa_balance(kassa_money, form.kassa_id, db)
+    elif form.source == "expense":
+            # update_kassa_balance(kassa_money, form.kassa_id, db)
             db.query(Expenses).filter(Expenses.id == form.id).update({
                 Expenses.currency_id: form.currency_id,
                 Expenses.date: datetime.now(),
@@ -206,7 +203,8 @@ def update_expense(form, thisuser, db):
                 Expenses.user_id: thisuser.id
             })
             db.commit()
-
+    kassa_money = kassa.balance + old_expense.money - form.money
+    update_kassa_balance(kassa_money, form.kassa_id, db)
 
 def add_salary_to_workers():
     db: Session = SessionLocal()

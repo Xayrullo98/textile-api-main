@@ -68,5 +68,5 @@ def one_kassa_via_currency_id(currency_id, db):
         joinedload(Kassas.user), joinedload(Kassas.currency)
     ).filter(Kassas.currency_id == currency_id).first()
     if the_item is None:
-        raise HTTPException(status_code=404, detail="Bu id dagi ma'lumot bazada mavjud emas")
+        raise HTTPException(status_code=404, detail="Bu currency dagi ma'lumot bazada mavjud emas")
     return the_item

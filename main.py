@@ -7,7 +7,7 @@ from fastapi_utils.tasks import repeat_every
 from functions.expenses import add_salary_to_workers
 from routes import  suppliers, supplies, currencies, category_details, \
     measures, stage_users, stages, users, categories, login, clients, broken_products, kassas, warehouse_products, \
-    orders, expenses, incomes, order_histories, order_done_products, order_for_masters, uploaded_files
+    orders, expenses, incomes, order_histories, order_done_products, order_for_masters, uploaded_files,barcodes
 
 app = FastAPI()
 
@@ -56,6 +56,7 @@ app.include_router(order_histories.order_histories_router)
 app.include_router(uploaded_files.uploaded_files_router)
 
 app.include_router(broken_products.broken_products_router)
+app.include_router(barcodes.barcodes_router)
 
 
 @app.on_event("startup")
