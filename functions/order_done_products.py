@@ -12,21 +12,26 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_order_done_products(order_id, stage_id, from_date, to_date, page, limit, db):
+def all_order_done_products(order_id, stage_id,worker_id, from_date, to_date, page, limit, db):
     order_done_products = db.query(Order_done_products).options(
         joinedload(Order_done_products.order), joinedload(Order_done_products.stage),
         joinedload(Order_done_products.user))
     order_done_product_stats = db.query(Order_done_products, func.sum(Order_done_products.quantity *
-            Order_done_products.kpi_money).label("total_price")).options(joinedload(Order_done_products.stage))
+                                                                      Order_done_products.kpi_money).label(
+        "total_price")).options(joinedload(Order_done_products.stage))
 
     if order_id:
         order_done_products = order_done_products.filter(Order_done_products.order_id == order_id)
         order_done_product_stats = order_done_product_stats.filter(Order_done_products.order_id == order_id)
+    if worker_id:
+        order_done_products = order_done_products.filter(Order_done_products.worker_id == worker_id)
+        order_done_product_stats = order_done_product_stats.filter(Order_done_products.worker_id == worker_id)
     if stage_id:
         order_done_products = order_done_products.filter(Order_done_products.stage_id == stage_id)
         order_done_product_stats = order_done_product_stats.filter(Order_done_products.stage_id == stage_id)
     if from_date and to_date:
-        order_done_products = order_done_products.filter(func.date(Order_done_products.datetime).between(from_date, to_date))
+        order_done_products = order_done_products.filter(
+            func.date(Order_done_products.datetime).between(from_date, to_date))
         order_done_product_stats = order_done_product_stats.filter(func.date(Order_done_products.datetime).
                                                                    between(from_date, to_date))
 
@@ -49,9 +54,13 @@ def one_order_done_product(ident, db):
 
 def create_order_done_product(form, thisuser, db):
     stage = one_stage(id=form.stage_id, db=db)
-    done_product = db.query(Order_done_products).filter(Order_done_products.order_id==form.order_id,
-                                                        Order_done_products.stage_id==form.stage_id,
-                                                        Order_done_products.datetime==datetime.datetime.now().date(),).first()
+    done_product_check = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                                              Order_done_products.stage_id == form.stage_id, ).first()
+    if done_product_check :
+       raise HTTPException(status_code=400,detail="Bu bosqich bajarilgan")
+    done_product = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                                        Order_done_products.stage_id == form.stage_id,
+                                                        Order_done_products.datetime == datetime.datetime.now().date(), ).first()
     if not done_product:
 
         new_order_h_db = Order_done_products(
@@ -66,7 +75,43 @@ def create_order_done_product(form, thisuser, db):
         )
         save_in_db(db, new_order_h_db)
     else:
-        quantity = done_product.quantity+form.quantity
+        quantity = done_product.quantity + form.quantity
+        db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                             Order_done_products.stage_id == form.stage_id,
+                                             Order_done_products.datetime == datetime.datetime.now().date(), ).update({
+            Order_done_products.datetime: datetime.datetime.now().date(),
+            Order_done_products.quantity: quantity,
+
+        })
+        db.commit()
+
+    money = form.quantity * stage.kpi
+    add_user_balance(user_id=form.worker_id, money=money, db=db)
+
+def create_order_done_product_for_mobile(form,  db):
+    stage = one_stage(id=form.stage_id, db=db)
+    done_product_check = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                                              Order_done_products.stage_id == form.stage_id, ).first()
+    if done_product_check :
+       raise HTTPException(status_code=400,detail="Bu bosqich bajarilgan")
+    done_product = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
+                                                        Order_done_products.stage_id == form.stage_id,
+                                                        Order_done_products.datetime == datetime.datetime.now().date(), ).first()
+    if not done_product:
+
+        new_order_h_db = Order_done_products(
+            order_id=form.order_id,
+            datetime=datetime.datetime.now().date(),
+            stage_id=form.stage_id,
+            worker_id=form.worker_id,
+            quantity=form.quantity,
+            kpi_money=stage.kpi,
+            user_id=form.worker_id,
+
+        )
+        save_in_db(db, new_order_h_db)
+    else:
+        quantity = done_product.quantity + form.quantity
         db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
                                              Order_done_products.stage_id == form.stage_id,
                                              Order_done_products.datetime == datetime.datetime.now().date(), ).update({
