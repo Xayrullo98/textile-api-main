@@ -123,6 +123,7 @@ def update_supply(form, thisuser, db):
 
 def supply_confirm(id, thisuser,  db):
     supply = the_one(db, Supplies, id)
+
     create_warehouse_product(category_detail_id=supply.category_detail_id, quantity=supply.quantity,
                              price=supply.price, currency_id=supply.currency_id, db=db, thisuser=thisuser)
 
