@@ -12,6 +12,6 @@ class Users(Base):
     status = Column(Boolean, nullable=False,default=True)
     name = Column(String(255), nullable=False)
     salary = Column(Integer, nullable=False)
-    balance = Column(Float, nullable=True,default=0)
+    balance = Column(Float, nullable=True, default=0)
     role = Column(String(255), nullable=False)
     token = Column(String(255), nullable=True)

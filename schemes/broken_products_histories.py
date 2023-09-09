@@ -11,5 +11,6 @@ class CreateBroken_product_history(BaseModel):
 class UpdateBroken_product_history(BaseModel):
     id: int
     category_id: int
-    quantity: float = Field(..., ge=0)
+    done_product_quantity: float = Field(..., ge=0)
+    brak_product_quantity: float = Field(..., ge=0)
     order_id: int
