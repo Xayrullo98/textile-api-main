@@ -62,7 +62,7 @@ def create_expense(form, db, thisuser):
         raise HTTPException(status_code=400, detail="Bu kassadan bu currency_id bilan chiqim qilib bo'lmaydi")
     if form.source not in ['supplier', 'user', 'expense']:
         raise HTTPException(status_code=404, detail='source error')
-    if form.money <= kassa.balance:
+    if form.money > kassa.balance:
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
     if form.source == "expense":
         new_expense_db = Expenses(
@@ -119,7 +119,7 @@ def update_expense(form, thisuser, db):
      u,agar source userga teng bo'lsa userni balansini yangilash kerak
     source supplierga teng bo'lsa suplier_balance yangilab qo'yish kerak"""
     if form.source not in ['supplier', 'user', 'expense']:
-        raise HTTPException(status_code=404, detail='source error')
+        raise HTTPException(status_code=400, detail='source error')
     old_expense = the_one(db, Expenses, form.id)
     kassa = the_one(db, Kassas, form.kassa_id)
     currency = the_one(db, Currencies, form.currency_id)
@@ -135,7 +135,7 @@ def update_expense(form, thisuser, db):
 
     if time_difference.seconds > allowed_time_difference.seconds:
         raise HTTPException(status_code=400, detail="Expense can only be updated within 5 minutes after creation")
-    if kassa.balance <= form.money:
+    if kassa.balance < form.money:
         raise HTTPException(status_code=400, detail="Kassada buncha pul mavjud emas!!!")
 
     if form.source == "supplier" and the_one(db, Suppliers, form.source_id):

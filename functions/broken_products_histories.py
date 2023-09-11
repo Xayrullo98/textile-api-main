@@ -43,9 +43,9 @@ def create_broken_product_history(form, db):
                        ).filter(Broken_product_histories.order_id == form.order_id).all()
 
     if history[0][1] is None:
-        amount = 0
+        amount = form.done_product_quantity + form.brak_product_quantity
     else:
-        amount = history[0][1]
+        amount = history[0][1] + form.done_product_quantity + form.brak_product_quantity
 
     if order.production_quantity >= amount:
 

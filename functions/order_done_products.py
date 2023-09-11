@@ -55,7 +55,7 @@ def create_order_done_product(form, thisuser, db):
     stage = one_stage(id=form.stage_id, db=db)
     done_product_check = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
                                                               Order_done_products.stage_id == form.stage_id, ).first()
-    if done_product_check :
+    if done_product_check:
        raise HTTPException(status_code=400, detail="Bu bosqich bajarilgan")
     done_product = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
                                                         Order_done_products.stage_id == form.stage_id,
