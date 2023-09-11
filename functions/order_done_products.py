@@ -2,9 +2,8 @@ import datetime
 from datetime import date
 
 from fastapi import HTTPException
-from sqlalchemy import and_, func
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
-
 from functions.stages import one_stage
 from functions.users import add_user_balance
 from models.order_done_products import Order_done_products
@@ -12,7 +11,7 @@ from utils.db_operations import save_in_db, the_one
 from utils.pagination import pagination
 
 
-def all_order_done_products(order_id, stage_id,worker_id, from_date, to_date, page, limit, db):
+def all_order_done_products(order_id, stage_id, worker_id, from_date, to_date, page, limit, db):
     order_done_products = db.query(Order_done_products).options(
         joinedload(Order_done_products.order), joinedload(Order_done_products.stage),
         joinedload(Order_done_products.user))
@@ -57,7 +56,7 @@ def create_order_done_product(form, thisuser, db):
     done_product_check = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
                                                               Order_done_products.stage_id == form.stage_id, ).first()
     if done_product_check :
-       raise HTTPException(status_code=400,detail="Bu bosqich bajarilgan")
+       raise HTTPException(status_code=400, detail="Bu bosqich bajarilgan")
     done_product = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
                                                         Order_done_products.stage_id == form.stage_id,
                                                         Order_done_products.datetime == datetime.datetime.now().date(), ).first()
@@ -87,43 +86,6 @@ def create_order_done_product(form, thisuser, db):
 
     money = form.quantity * stage.kpi
     add_user_balance(user_id=form.worker_id, money=money, db=db)
-
-def create_order_done_product_for_mobile(form,  db):
-    stage = one_stage(id=form.stage_id, db=db)
-    done_product_check = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
-                                                              Order_done_products.stage_id == form.stage_id, ).first()
-    if done_product_check :
-       raise HTTPException(status_code=400,detail="Bu bosqich bajarilgan")
-    done_product = db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
-                                                        Order_done_products.stage_id == form.stage_id,
-                                                        Order_done_products.datetime == datetime.datetime.now().date(), ).first()
-    if not done_product:
-
-        new_order_h_db = Order_done_products(
-            order_id=form.order_id,
-            datetime=datetime.datetime.now().date(),
-            stage_id=form.stage_id,
-            worker_id=form.worker_id,
-            quantity=form.quantity,
-            kpi_money=stage.kpi,
-            user_id=form.worker_id,
-
-        )
-        save_in_db(db, new_order_h_db)
-    else:
-        quantity = done_product.quantity + form.quantity
-        db.query(Order_done_products).filter(Order_done_products.order_id == form.order_id,
-                                             Order_done_products.stage_id == form.stage_id,
-                                             Order_done_products.datetime == datetime.datetime.now().date(), ).update({
-            Order_done_products.datetime: datetime.datetime.now().date(),
-            Order_done_products.quantity: quantity,
-
-        })
-        db.commit()
-
-    money = form.quantity * stage.kpi
-    add_user_balance(user_id=form.worker_id, money=money, db=db)
-
 
 
 def update_order_done_product(form, db, thisuser):

@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
 
 from models.barcodes import Barcodes
 from models.categories import Categories
@@ -26,7 +25,7 @@ def one_barcode(ident, db):
     return the_item
 
 
-def create_barcodes(form,current_user,  db):
+def create_barcodes(form, current_user,  db):
     the_one(db, Categories, form.order_id)
     broken_product = db.query(Barcodes).filter(Barcodes.order_id == form.order_id).first()
     if broken_product:

@@ -65,3 +65,4 @@ async def check():
     timee = datetime.datetime.now().strftime("%d") == "03"
     if timee:
         await add_salary_to_workers()
+

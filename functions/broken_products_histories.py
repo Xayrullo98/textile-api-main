@@ -43,7 +43,7 @@ def create_broken_product_history(form, db):
                        ).filter(Broken_product_histories.order_id == form.order_id).all()
 
     if history[0][1] is None:
-        amount =0
+        amount = 0
     else:
         amount = history[0][1]
 
@@ -55,12 +55,11 @@ def create_broken_product_history(form, db):
             brak_product_quantity=form.brak_product_quantity,
             order_id=form.order_id
         )
-
         create_broken_product(form.category_id, form.brak_product_quantity, db)
         save_in_db(db, new_broken_history_db)
     else:
         differance = history[0][1]-order.production_quantity
-        raise HTTPException(status_code=400,detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
+        raise HTTPException(status_code=400, detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
 
 
 def update_broken_product_history(form, db):
@@ -69,8 +68,8 @@ def update_broken_product_history(form, db):
     order = the_one(db, Orders, form.order_id)
     history_quantity = db.query(Broken_product_histories, func.sum(Broken_product_histories.done_product_quantity +
                                 Broken_product_histories.brak_product_quantity)
-                               ).filter(Broken_product_histories.order_id == form.order_id).all()
-    print(history_quantity,'ddddddddddddddddddddddddddddddddddd')
+                                ).filter(Broken_product_histories.order_id == form.order_id).all()
+
     if order.production_quantity >= history_quantity[0][1]:
         old_broken_product_h = db.query(Broken_products).filter(Broken_products.category_id == form.category_id).first()
 
@@ -91,11 +90,6 @@ def update_broken_product_history(form, db):
             Broken_product_histories.done_product_quantity: form.done_product_quantity
         })
         db.commit()
-
-
     else:
-        differance = history[0][1]-order.production_quantity
-        print(differance, '=============')
-        print(history[0][1])
-        raise HTTPException(status_code=400,detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
+        raise HTTPException(status_code=400, detail=f"Ortiqcha maxsulot kiritildi qayta kiriting")
 

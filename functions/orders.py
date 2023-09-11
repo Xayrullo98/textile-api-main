@@ -131,6 +131,6 @@ def update_order(form, thisuser, db):
 
 
 def order_delete(id, db):
-    order = the_one(db, Orders, id)
+    the_one(db, Orders, id)
     db.query(Orders).filter(Orders.id == id).delete()
     db.commit()
