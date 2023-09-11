@@ -41,9 +41,10 @@ def create_broken_product_history(form, db):
     history = db.query(Broken_product_histories, func.sum(Broken_product_histories.done_product_quantity +
                                                           Broken_product_histories.brak_product_quantity)
                        ).filter(Broken_product_histories.order_id == form.order_id).all()
+
     if history[0][1] is None:
-        amount = 0
-    elif history[0][1]:
+        amount =0
+    else:
         amount = history[0][1]
 
     if order.production_quantity >= amount:
@@ -69,8 +70,19 @@ def update_broken_product_history(form, db):
     history_quantity = db.query(Broken_product_histories, func.sum(Broken_product_histories.done_product_quantity +
                                 Broken_product_histories.brak_product_quantity)
                                ).filter(Broken_product_histories.order_id == form.order_id).all()
+    print(history_quantity,'ddddddddddddddddddddddddddddddddddd')
     if order.production_quantity >= history_quantity[0][1]:
         old_broken_product_h = db.query(Broken_products).filter(Broken_products.category_id == form.category_id).first()
+
+        differnce = form.brak_product_quantity - history.brak_product_quantity
+
+        differnce_hp = old_broken_product_h.quantity + differnce
+
+        db.query(Broken_products).filter(Broken_products.category_id == form.category_id).update({
+            Broken_products.category_id: form.category_id,
+            Broken_products.quantity: differnce_hp,
+        })
+        db.commit()
 
         db.query(Broken_product_histories).filter(Broken_product_histories.id == form.id).update({
             Broken_product_histories.category_id: form.category_id,
@@ -80,21 +92,10 @@ def update_broken_product_history(form, db):
         })
         db.commit()
 
-        differnce = history.done_product_quantity - form.done_product_quantity
-        differnce_hp = old_broken_product_h.done_product_quantity + differnce
 
-        differnce_2 = history.brak_product_quantity - form.brak_product_quantity
-        differnce_hp2 = old_broken_product_h.brak_product_quantity + differnce_2
-
-        db.query(Broken_product_histories).filter(Broken_product_histories.category_id == form.category_id).update({
-            Broken_product_histories.category_id: form.category_id,
-            Broken_product_histories.done_product_quantity: differnce_hp,
-            Broken_product_histories.brak_product_quantity: differnce_hp2
-        })
-        db.commit()
-    # else:
-    #     differance = history[0][1]-order.production_quantity
-    #     print(differance, '=============')
-    #     print(history[0][1])
-    #     raise HTTPException(status_code=400,detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
+    else:
+        differance = history[0][1]-order.production_quantity
+        print(differance, '=============')
+        print(history[0][1])
+        raise HTTPException(status_code=400,detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
 

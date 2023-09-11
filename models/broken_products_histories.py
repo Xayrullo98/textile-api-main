@@ -11,8 +11,8 @@ class Broken_product_histories(Base):
     __tablename__ = 'broken_product_histories'
     id = Column(Integer, autoincrement=True, primary_key=True)
     category_id = Column(Integer, nullable=False)
-    done_product_quantity = Column(Numeric, nullable=False)
-    brak_product_quantity = Column(Numeric, nullable=False)
+    done_product_quantity = Column(Float, nullable=False)
+    brak_product_quantity = Column(Float, nullable=False)
     order_id = Column(Integer, nullable=False)
 
     category = relationship("Categories", foreign_keys=[category_id],
