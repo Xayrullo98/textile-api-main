@@ -97,4 +97,4 @@ def update_broken_product_history(form, db):
     #     print(differance, '=============')
     #     print(history[0][1])
     #     raise HTTPException(status_code=400,detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
-    #
+
