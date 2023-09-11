@@ -43,23 +43,23 @@ def create_broken_product_history(form, db):
                        ).filter(Broken_product_histories.order_id == form.order_id).all()
 
     if history[0][1] is None:
-        amount = 0
+        amount = form.done_product_quantity + form.brak_product_quantity
     else:
-        amount = history[0][1]
+        amount = history[0][1]+form.done_product_quantity + form.brak_product_quantity
 
     if order.production_quantity >= amount:
 
-        new_broken_history_db = Broken_product_histories(
-            category_id=form.category_id,
-            done_product_quantity=form.done_product_quantity,
-            brak_product_quantity=form.brak_product_quantity,
-            order_id=form.order_id
-        )
-        create_broken_product(form.category_id, form.brak_product_quantity, db)
-        save_in_db(db, new_broken_history_db)
+            new_broken_history_db = Broken_product_histories(
+                category_id=form.category_id,
+                done_product_quantity=form.done_product_quantity,
+                brak_product_quantity=form.brak_product_quantity,
+                order_id=form.order_id
+            )
+            create_broken_product(form.category_id, form.brak_product_quantity, db)
+            save_in_db(db, new_broken_history_db)
     else:
-        differance = history[0][1]-order.production_quantity
-        raise HTTPException(status_code=400, detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
+            differance = history[0][1]-order.production_quantity
+            raise HTTPException(status_code=400, detail=f"Ortiqcha {differance} ta maxsulot kiritildi qayta kiriting")
 
 
 def update_broken_product_history(form, db):
